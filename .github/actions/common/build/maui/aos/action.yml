@@ -33,13 +33,7 @@ runs:
       run: |
         dotnet workload install maui-android
         
-    # 1) Restore
-    - name: Restore dependencies
-      shell: bash
-      run: |
-        dotnet restore "${{ inputs.work_dir }}/${{ inputs.project_name }}/${{ inputs.project_name }}.csproj" -f "${{ inputs.target_framework }}"
-
-    # 2) Publish – APK only
+    # 1) Publish – APK only
     - name: Publish MAUI APK
       shell: bash
       run: |
@@ -49,7 +43,7 @@ runs:
           -p:AndroidPackageFormats=apk \
           -o "${{ inputs.publish_dir }}"
 
-    # 3) Rename to artifact_name
+    # 2) Rename to artifact_name
     - name: Rename APK to artifact name
       shell: bash
       run: |
