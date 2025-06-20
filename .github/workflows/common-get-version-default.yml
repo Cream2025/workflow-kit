@@ -11,14 +11,18 @@ on:
         type: string
     outputs:
       version:
-        description: '버전 정보'
+        description: 버전 정보(ex. v1.0.0)
         value: ${{ jobs.get-version.outputs.version }}
+      simple_version:
+        value: ${{ jobs.get-version.outputs.simple_version }}
+        description: 간단한 버전 정보(ex. 1.0.0)
 
 jobs:
   get-version:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.get-version.outputs.version }}
+      simple_version: ${{ steps.get-version.outputs.simple_version }}
       
     env:
       BRANCH: ${{ inputs.branch }}
@@ -43,9 +47,10 @@ jobs:
             VERSION=$(echo "$TAG" | awk -F '-' '{print $NF}')
           else
             CURRENT_BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF##refs/heads/}}"
-            VERSION="$INPUT_VERSION"
             if [[ "$BRANCH" != "live" ]]; then
-              VERSION="$VERSION.$DATETIME"
+              VERSION="$INPUT_VERSION.$DATETIME"
+            else
+              VERSION="$INPUT_VERSION.0"
             fi
 
             echo "Validating branch..."
@@ -58,17 +63,13 @@ jobs:
           fi
           
           echo "Validating version format: $VERSION"
-          if [[ "$BRANCH" != "live" ]]; then
-            if [[ ! "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-              echo "Error: VERSION must be 'v<숫자>.<숫자>.<숫자>' format. (ex. v1.0.250616215300)"
-              exit 1
-            fi
-          else
-            if [[ ! "$VERSION" =~ ^v[0-9]+\.[0-9]+$ ]]; then
-              echo "Error: Live VERSION must match 'v<숫자>.<숫자>' format. (ex. v1.0)"
-              exit 1
-            fi
+          if [[ ! "$VERSION" =~ ^v([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+            echo "Error: VERSION must be 'v<숫자>.<숫자>.<숫자>' format. (ex. v1.0.250616215300)"
+            exit 1
           fi
+
+          SIMPLE_VERSION="${BASH_REMATCH[1]}"
           
           echo "VERSION: $VERSION"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "simple_version=$SIMPLE_VERSION" >> $GITHUB_OUTPUT

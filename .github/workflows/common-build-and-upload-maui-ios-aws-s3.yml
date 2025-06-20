@@ -30,9 +30,6 @@ on:
       version:
         required: true
         type: string
-      application_display_version:
-        required: true
-        type: string
       ios_cert_base64:
         required: true
         type: string
