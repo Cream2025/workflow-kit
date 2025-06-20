@@ -18,6 +18,9 @@ on:
       image_tag:
         required: true
         type: string
+      aws_ecr_registry:
+        required: true
+        type: string
       build_configuration:
         required: false
         default: Release
@@ -31,8 +34,6 @@ on:
         required: true
       AWS_SECRET_ACCESS_KEY:
         required: true
-      AWS_ECR_REGISTRY:
-        required: true
     outputs:
       image_url:
         description: 'Docker Image URL'
@@ -43,8 +44,8 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      IMAGE_URL: ${{ secrets.AWS_ECR_REGISTRY }}/${{ inputs.repository_name }}:${{ inputs.image_tag }}
-      
+      IMAGE_URL: ${{ inputs.aws_ecr_registry }}/${{ inputs.repository_name }}:${{ inputs.image_tag }}
+
     steps:
       - name: Checkout code from ${{ inputs.branch }}
         uses: actions/checkout@v4
@@ -72,7 +73,7 @@ jobs:
           work_dir: ${{ inputs.work_dir }}
           image_url: ${{ env.IMAGE_URL }}
           aws_region: ${{ inputs.aws_region }}
-          ecr_registry: ${{ secrets.AWS_ECR_REGISTRY }}
+          ecr_registry: ${{ inputs.aws_ecr_registry }}
 
       - name: Set Image URL Output
         run: echo "image_url=$IMAGE_URL" >> $GITHUB_OUTPUT
