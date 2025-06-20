@@ -56,13 +56,13 @@ jobs:
           
           echo "Validating version format: $VERSION"
           if [[ "$BRANCH" != "live" ]]; then
-            if [[ ! "$VERSION" =~ ^v[0-9]+\.[0-9]+$ ]]; then
-              echo "Error: Live VERSION must match 'v<숫자>.<숫자>' format. (ex. v1.0)"
+            if [[ ! "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo "Error: VERSION must be 'v<숫자>.<숫자>.<숫자>' format. (ex. v1.0.250616215300)"
               exit 1
             fi
           else
-            if [[ ! "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-              echo "Error: VERSION must be 'v<숫자>.<숫자>.<숫자>' format. (ex. v1.0.250616215300)"
+            if [[ ! "$VERSION" =~ ^v[0-9]+\.[0-9]+$ ]]; then
+              echo "Error: Live VERSION must match 'v<숫자>.<숫자>' format. (ex. v1.0)"
               exit 1
             fi
           fi
