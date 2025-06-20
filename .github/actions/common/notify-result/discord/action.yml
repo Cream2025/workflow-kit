@@ -55,12 +55,14 @@ runs:
 
     - name: Send message
       if: ${{ steps.create-message.outputs.message != '' }}
+      env:
+        RAW_MESSAGE: ${{ steps.create-message.outputs.message }}
+        DISCORD_WEBHOOK_URL: ${{ inputs.discord_webhook_url }}
       run: |
-        raw_message="${{ steps.create-message.outputs.message }}"
-        message=$(echo "$raw_message" | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
+        message=$(echo "$RAW_MESSAGE" | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
         curl -H "Content-Type: application/json" \
              -X POST \
              -d "{\"content\": \"$message\"}" \
-             "${{ inputs.discord_webhook_url }}"
+             "$DISCORD_WEBHOOK_URL"
       shell: bash
       
