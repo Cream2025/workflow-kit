@@ -69,6 +69,8 @@ on:
         required: true
       AWS_SECRET_ACCESS_KEY:
         required: true
+      GIT_BOT_TOKEN:
+        required: true
 
 jobs:
   build-and-upload-maui-ios-aws-s3:
@@ -92,6 +94,13 @@ jobs:
             aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             aws-region: ${{ inputs.aws_region }}
 
+      - name: Application Display Version
+        uses: Cream2025/workflow-kit/.github/actions/util/increment-var-counter@main
+        with:
+          repository_var_name: ${{ inputs.repository_var_name }}
+          github_token: ${{ secrets.GIT_BOT_TOKEN }}
+
+      
       - name: Build Maui iOS Platform
         uses: Cream2025/workflow-kit/.github/actions/common/build/maui/ios@main
         with:
