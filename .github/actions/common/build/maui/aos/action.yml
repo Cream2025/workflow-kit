@@ -1,5 +1,5 @@
-name: Build Maui Android Platform
-description: MAUI Android Platform 빌드하는 작업
+name: Build Maui AOS Platform
+description: MAUI AOS Platform 빌드하는 작업
 
 inputs:
   work_dir:
@@ -30,7 +30,7 @@ runs:
       run: dotnet restore ${{ inputs.work_dir }}/${{ inputs.project_name }}/${{ inputs.project_name }}.csproj
       shell: powershell
 
-    - name: Build MAUI Android project
+    - name: Build MAUI AOS project
       run: |
         dotnet build ${{ inputs.work_dir }}/${{ inputs.project_name }}/${{ inputs.project_name }}.csproj `
           -c ${{ inputs.build_configuration }} `
