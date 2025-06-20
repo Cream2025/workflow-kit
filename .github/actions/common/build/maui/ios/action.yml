@@ -72,7 +72,7 @@ runs:
       uses: apple-actions/import-codesign-certs@v3
       with:
         p12-file-base64: ${{ inputs.ios_cert_base64 }}
-        p12-password:    ${{ inputs.ios_cert_password }}
+        p12-password: ${{ inputs.ios_cert_password }}
 
     # (2) 프로비저닝 프로파일 설치
     - name: Install provisioning profile
