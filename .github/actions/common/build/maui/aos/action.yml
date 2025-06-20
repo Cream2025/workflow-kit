@@ -13,7 +13,7 @@ inputs:
     description: 타겟 프레임워크
   artifact_name:
     required: true
-    description: 압축 파일명
+    description: apk명
   publish_dir:
     required: false
     default: publish
@@ -26,20 +26,31 @@ inputs:
 runs:
   using: "composite"
   steps:
+    # 1) Restore
     - name: Restore dependencies
-      run: dotnet restore ${{ inputs.work_dir }}/${{ inputs.project_name }}/${{ inputs.project_name }}.csproj
-      shell: powershell
-
-    - name: Build MAUI AOS project
+      shell: bash
       run: |
-        dotnet build ${{ inputs.work_dir }}/${{ inputs.project_name }}/${{ inputs.project_name }}.csproj `
-          -c ${{ inputs.build_configuration }} `
-          -f ${{ inputs.target_framework }} `
-          -o ${{ inputs.publish_dir }}
-      shell: powershell
+        dotnet restore "${{ inputs.work_dir }}/${{ inputs.project_name }}/${{ inputs.project_name }}.csproj"
 
-    - name: Archive build output
+    # 2) Publish – APK only
+    - name: Publish MAUI APK
+      shell: bash
       run: |
-        Compress-Archive -Path ${{ inputs.publish_dir }}\* -DestinationPath ${{ inputs.publish_dir }}\${{ inputs.artifact_name }}
-      shell: powershell
+        dotnet publish "${{ inputs.work_dir }}/${{ inputs.project_name }}/${{ inputs.project_name }}.csproj" \
+          -c "${{ inputs.build_configuration }}" \
+          -f "${{ inputs.target_framework }}" \
+          -p:AndroidPackageFormats=apk \
+          -o "${{ inputs.publish_dir }}"
+
+    # 3) Rename to artifact_name
+    - name: Rename APK to artifact name
+      shell: bash
+      run: |
+        apk_path=$(find "${{ inputs.publish_dir }}" -maxdepth 1 -type f -name '*.apk' | head -n 1)
+        if [ -z "$apk_path" ]; then
+          echo "❌ APK not found in ${publish_dir}" && exit 1
+        fi
+        mv "$apk_path" "${{ inputs.publish_dir }}/${{ inputs.artifact_name }}"
+        echo "📦 APK ready: ${publish_dir}/${{ inputs.artifact_name }}"
+
 
