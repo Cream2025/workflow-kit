@@ -71,14 +71,14 @@ runs:
     - name: Import Apple distribution certificate
       uses: apple-actions/import-codesign-certs@v3
       with:
-        p12-file-base64: ${{ inputs.cert_p12_base64 }}
-        p12-password:    ${{ inputs.cert_p12_password }}
+        p12-file-base64: ${{ inputs.ios_cert_base64 }}
+        p12-password:    ${{ inputs.ios_cert_password }}
 
     # (2) 프로비저닝 프로파일 설치
     - name: Install provisioning profile
       run: |
         PP_PATH="$RUNNER_TEMP/profile.mobileprovision"
-        echo "${{ inputs.provisioning_base64 }}" | base64 -d > "$PP_PATH"
+        echo "${{ inputs.ios_provisioning_base64 }}" | base64 -d > "$PP_PATH"
         mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
         cp "$PP_PATH" "$HOME/Library/MobileDevice/Provisioning Profiles/"
       shell: bash
