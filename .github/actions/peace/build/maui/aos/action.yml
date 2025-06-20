@@ -1,0 +1,56 @@
+name: Build Maui AOS Platform
+description: MAUI AOS Platform 빌드하는 작업
+
+inputs:
+  work_dir:
+    required: true
+    description: 빌드할 working directory
+  project_name:
+    required: true
+    description: 빌드할 프로젝트명
+  target_framework:
+    required: true
+    description: 타겟 프레임워크
+  artifact_name:
+    required: true
+    description: apk명
+  publish_dir:
+    required: false
+    default: publish
+    description: output 경로
+  build_configuration:
+    required: false
+    default: Release
+    description: Build Configuration
+
+runs:
+  using: "composite"
+  steps:
+    # 1) Restore
+    - name: Restore dependencies
+      shell: powershell
+      run: |
+        dotnet restore "${{ inputs.work_dir }}/${{ inputs.project_name }}/${{ inputs.project_name }}.csproj"
+
+    # 2) Publish – APK only
+    - name: Publish MAUI APK
+      shell: powershell
+      run: |
+        dotnet publish "${{ inputs.work_dir }}/${{ inputs.project_name }}/${{ inputs.project_name }}.csproj" `
+          -c "${{ inputs.build_configuration }}" `
+          -f "${{ inputs.target_framework }}" `
+          -p:AndroidPackageFormats=apk `
+          -o "${{ inputs.publish_dir }}"
+
+    # 3) Rename to artifact_name
+    - name: Rename APK to artifact name
+      shell: bash
+      run: |
+        apk_path=$(find "${{ inputs.publish_dir }}" -maxdepth 1 -type f -name '*.apk' | head -n 1)
+        if [ -z "$apk_path" ]; then
+          echo "❌ APK not found in ${publish_dir}" && exit 1
+        fi
+        mv "$apk_path" "${{ inputs.publish_dir }}/${{ inputs.artifact_name }}"
+        echo "📦 APK ready: ${publish_dir}/${{ inputs.artifact_name }}"
+
+
