@@ -37,7 +37,7 @@ on:
     outputs:
       image_url:
         description: 'Docker Image URL'
-        value: ${{ jobs.build-and-upload-web-default-aws-ecr.outputs.version }}
+        value: ${{ jobs.build-and-upload-web-default-aws-ecr.outputs.image_url }}
 
 jobs:
   build-and-upload-web-default-aws-ecr:
