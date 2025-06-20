@@ -95,7 +95,7 @@ jobs:
           codesign_key: ${{ inputs.codesign_key }}
           codesign_provision: ${{ inputs.codesign_provision }}
           version: ${{ inputs.version }}
-          application_display_version: ${{ needs.increment-ios-display-version.outputs.new_value }}
+          application_display_version: ${{ steps.increment-ios-display-version.outputs.new_value }}
           publish_dir: ${{ inputs.publish_dir }}
           build_configuration: ${{ inputs.build_configuration }}
           ios_cert_base64: ${{ inputs.ios_cert_base64 }}
