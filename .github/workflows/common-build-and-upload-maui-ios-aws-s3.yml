@@ -98,7 +98,7 @@ jobs:
           echo "${{ secrets.IOS_PROVISIONING_BASE64 }}" | base64 -d > "$PP_PATH"
           
           # 프로비저닝 프로파일 UUID 추출
-          PP_UUID=$(security cms -D -i "$PP_PATH" | plutil -extract UUID xml1 -o - - | xmllint --xpath "string(//string)" -)
+          PP_UUID=$(security cms -D -i "$PP_PATH" | plutil -extract Name xml1 -o - - | xmllint --xpath "string(//string)" -)
           
           # 프로비저닝 프로파일 설치
           mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
