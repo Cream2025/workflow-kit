@@ -28,7 +28,7 @@ runs:
   steps:
     - name: Restore dependencies
       run: dotnet restore ${{ inputs.work_dir }}/${{ inputs.project_name }}/${{ inputs.project_name }}.csproj
-      shell: bash
+      shell: powershell
 
     - name: Build MAUI Windows project
       run: |
@@ -36,9 +36,9 @@ runs:
           -c ${{ inputs.build_configuration }} `
           -f ${{ inputs.target_framework }} `
           -o ${{ inputs.publish_dir }}
-      shell: bash
+      shell: powershell
 
     - name: Archive build output
       run: |
         Compress-Archive -Path ${{ inputs.publish_dir }}\* -DestinationPath ${{ inputs.publish_dir }}\${{ inputs.artifact_name }}
-      shell: bash
+      shell: powershell
