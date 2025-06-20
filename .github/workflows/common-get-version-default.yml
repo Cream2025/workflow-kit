@@ -45,6 +45,8 @@ jobs:
             CURRENT_BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF##refs/heads/}}"
             if [[ "$BRANCH" != "live" ]]; then
               VERSION="$INPUT_VERSION.$DATETIME"
+            else
+              VERSION="$INPUT_VERSION
             fi
 
             echo "Validating branch..."
