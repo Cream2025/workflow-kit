@@ -14,45 +14,50 @@ inputs:
   version:
     required: false
     description: 배포한 버전
+  notify_success:
+    required: false
+    default: "true"
+    description: 성공한 내역 알림 보낼지 여부
 
 runs:
   using: "composite"
   steps:
-    - name: Create Fail Message
+    - name: Create Message
       id: create-message
-      if: inputs.failed_jobs != ''
       run: |
         github_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        message=""
 
-        jobs="${{ inputs.failed_jobs }}"
-        formatted_jobs=""
-        IFS=',' read -ra JOB_ARRAY <<< "$jobs"
-        for job in "${JOB_ARRAY[@]}"; do
-          formatted_jobs+="  - $job\n"
-        done
+        if [[ "${{ inputs.failed_jobs }}" != "" ]]; then
+          jobs="${{ inputs.failed_jobs }}"
+          formatted_jobs=""
+          IFS=',' read -ra JOB_ARRAY <<< "$jobs"
+          for job in "${JOB_ARRAY[@]}"; do
+            formatted_jobs+="  - $job\n"
+          done
 
-        message="**[😢 배포 실패]**\n"
-        message+="- 서비스: `${{ inputs.title }}`\n"
-        message+="- 실패한 job:\n$formatted_jobs"
-        message+="👉[workflow 확인]($github_url)"
+          message="**[😢 배포 실패]**\n"
+          message+="- 서비스: `${{ inputs.title }}`\n"
+          message+="- 실패한 job:\n$formatted_jobs"
+          message+="👉[workflow 확인]($github_url)"
+        elif [[ "${{ inputs.notify_success }}" == "true" ]]; then
+          message="**[🐣 배포 성공]**\n"
+          message+="- 서비스: `${{ inputs.title }}`\n"
+          if [[ -n "${{ inputs.version }}" ]]; then
+            message+="- 버전: `${{ inputs.version }}`\n"
+          fi
+        fi
 
-        echo "message=$message" >> $GITHUB_OUTPUT
+        echo "message<<EOF" >> $GITHUB_OUTPUT
+        echo -e "$message" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
       shell: bash
 
-    - name: Create Success Message
-      id: create-message
-      if: inputs.failed_jobs == ''
+    - name: Send message
+      if: ${{ steps.create-message.outputs.message != '' }}
       run: |
-        message="**[🐣 배포 성공]**\n"
-        message+="- 서비스: `${{ inputs.title }}`\n"
-        message+="- 버전: `${{ inputs.version }}`"
-
-        echo "message=$message" >> $GITHUB_OUTPUT
-      shell: bash
-
-    - name: Send Message
-      run: |
-        message="${{ steps.create-message.outputs.message }}"
+        raw_message="${{ steps.create-message.outputs.message }}"
+        message=$(echo "$raw_message" | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
         curl -H "Content-Type: application/json" \
              -X POST \
              -d "{\"content\": \"$message\"}" \
