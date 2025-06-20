@@ -54,7 +54,7 @@ jobs:
       s3_upload_path: ${{ steps.set-s3-upload-path.outputs.s3_upload_path }}
 
     env:
-      S3_UPLOAD_PATH: ${{ inputs.s3_upload_upper_dir }}/win/${{ inputs.artifact_name }}
+      S3_UPLOAD_PATH: ${{ inputs.s3_upload_upper_dir }}/${{ inputs.branch }}/win/${{ inputs.artifact_name }}
 
     steps:
       - name: Checkout code from ${{ inputs.branch }}
