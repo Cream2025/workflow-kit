@@ -9,6 +9,11 @@ inputs:
     required: true
     description: 조회/수정할 github token
 
+outputs:
+  new_value:
+    value: ${{ steps.set-var-value.outputs.new_value }}
+    description: 증가된 값
+
 runs:
   using: "composite"
   steps:
@@ -25,6 +30,7 @@ runs:
       shell: bash
 
     - name: Increment And Set Variable
+      id: set-var-value
       run: |
         var_name="{{ inputs.repository_var_name }}"
         new_value=$(( ${{ steps.get-var-value.outputs.var_value }} + 1 ))
@@ -35,4 +41,7 @@ runs:
           -H "Content-Type: application/json" \
           https://api.github.com/repos/${{ github.repository }}/actions/variables/$var_name \
           -d "{\"name\":\"$var_name\", \"value\":\"$new_value\"}"
+
+        echo "new_value=$new_value" >> $GITHUB_OUTPUT
       shell: bash
+
