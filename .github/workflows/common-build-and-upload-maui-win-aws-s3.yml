@@ -49,6 +49,7 @@ on:
 jobs:
   build-and-upload-maui-win-aws-s3:
     runs-on: windows-latest
+    timeout-minutes: 30
     outputs:
       s3_upload_path: ${{ steps.set-s3-upload-path.outputs.s3_upload_path }}
 
@@ -96,7 +97,7 @@ jobs:
       - name: Upload Artifact to AWS S3
         uses: Cream2025/workflow-kit/.github/actions/common/upload/aws-s3@main
         with:
-          upload_file_path: ${{ inputs.publish_dir }}\${{ inputs.artifact_name }}
+          upload_file_path: ${{ inputs.publish_dir }}/${{ inputs.artifact_name }}
           aws_region: ${{ inputs.aws_region }}
           s3_bucket: ${{ inputs.s3_bucket }}
           s3_upload_path: ${{ env.S3_UPLOAD_PATH }}
