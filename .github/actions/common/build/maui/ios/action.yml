@@ -59,13 +59,13 @@ runs:
   using: "composite"
   steps:
     # (1) 프로비저닝 프로파일 설치
-    - name: Install provisioning profile
-      run: |
-        PP_PATH="$RUNNER_TEMP/profile.mobileprovision"
-        echo "${{ inputs.ios_provisioning_base64 }}" | base64 -d > "$PP_PATH"
-        mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
-        cp "$PP_PATH" "$HOME/Library/MobileDevice/Provisioning Profiles/"
-      shell: bash
+    # - name: Install provisioning profile
+    #   run: |
+    #     PP_PATH="$RUNNER_TEMP/profile.mobileprovision"
+    #     echo "${{ inputs.ios_provisioning_base64 }}" | base64 -d > "$PP_PATH"
+    #     mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
+    #     cp "$PP_PATH" "$HOME/Library/MobileDevice/Provisioning Profiles/"
+    #   shell: bash
 
     # (2) 워크로드 설치
     - name: Dotnet Workload Restore
