@@ -54,7 +54,7 @@ on:
 
 jobs:
   build-and-upload-maui-aos-aws-s3:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     timeout-minutes: 30
     outputs:
       s3_upload_path: ${{ steps.set-s3-upload-value.outputs.s3_upload_path }}
