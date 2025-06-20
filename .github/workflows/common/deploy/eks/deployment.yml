@@ -1,3 +1,4 @@
+# 변경되는 경우 deploy-eks-deployment.yml도 변경 필요
 on:
   workflow_call:
     inputs:

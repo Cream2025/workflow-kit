@@ -1,0 +1,20 @@
+on:
+  workflow_call:
+    inputs:
+      input_version:
+        required: false
+        type: string
+      branch:
+        required: true
+        type: string
+    outputs:
+      version:
+        description: '버전 정보'
+        value: ${{ jobs.call-workflow.outputs.version }}
+
+jobs:
+  call-workflow:
+    uses: ./.github/workflows/common/get-version/default.yml
+    with:
+      input_version: ${{ inputs.input_version }}
+      branch: ${{ inputs.branch }}

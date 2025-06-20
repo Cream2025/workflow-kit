@@ -1,3 +1,4 @@
+# 변경되는 경우 build-and-upload-web-default-aws-ecr.yml도 변경 필요
 on:
   workflow_call:
     inputs:

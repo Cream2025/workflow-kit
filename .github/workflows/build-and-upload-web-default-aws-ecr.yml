@@ -1,0 +1,53 @@
+on:
+  workflow_call:
+    inputs:
+      branch:
+        required: true
+        type: string
+      work_dir:
+        required: true
+        type: string
+      project_name:
+        required: true
+        type: string
+      repository_name:
+        required: true
+        type: string
+      image_tag:
+        required: true
+        type: string
+      build_configuration:
+        required: false
+        default: Release
+        type: string
+      aws_region:
+        required: false
+        default: ap-northeast-2
+        type: string
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      AWS_ECR_REGISTRY:
+        required: true
+    outputs:
+      image_url:
+        description: 'Docker Image URL'
+        value: ${{ jobs.call-workflow.outputs.version }}
+
+jobs:
+  call-workflow:
+    uses: ./.github/workflows/common/build-and-upload/web/default/aws-ecr.yml
+    with:
+      branch: ${{ inputs.branch }}
+      work_dir: ${{ inputs.work_dir }}
+      project_name: ${{ inputs.project_name }}
+      repository_name: ${{ inputs.repository_name }}
+      image_tag: ${{ inputs.image_tag }}
+      build_configuration: ${{ inputs.build_configuration }}
+      aws_region: ${{ inputs.aws_region }}
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_ECR_REGISTRY: ${{ secrets.AWS_ECR_REGISTRY }}

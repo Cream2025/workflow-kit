@@ -1,0 +1,41 @@
+on:
+  workflow_call:
+    inputs:
+      cluster_name:
+        required: true
+        type: string
+      namespace:
+        required: true
+        type: string
+      deployment_name:
+        required: true
+        type: string
+      container_name:
+        required: true
+        type: string
+      image_url:
+        required: true
+        type: string
+      aws_region:
+        required: false
+        default: ap-northeast-2
+        type: string
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+
+jobs:
+  call-workflow:
+    uses: ./.github/workflows/common/deploy/eks/deployment.yml
+    with:
+      cluster_name: ${{ inputs.cluster_name }}
+      namespace: ${{ inputs.namespace }}
+      deployment_name: ${{ inputs.deployment_name }}
+      container_name: ${{ inputs.container_name }}
+      image_url: ${{ inputs.image_url }}
+      aws_region: ${{ inputs.aws_region }}
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

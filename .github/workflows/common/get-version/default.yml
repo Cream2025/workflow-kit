@@ -1,3 +1,4 @@
+# 변경되는 경우 get-version-default.yml도 변경 필요
 name: Get Version by tag or input
 
 on:
