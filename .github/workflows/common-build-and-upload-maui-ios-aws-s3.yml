@@ -60,11 +60,6 @@ jobs:
     timeout-minutes: 30
     steps:
        # 코드 서명 인증서 가져오기
-      - name: Debug cert file
-        run: |
-          echo "${{ secrets.IOS_CERT_BASE64 }}" | base64 -d > cert.p12
-          file cert.p12
-
       - name: Import Apple distribution certificate
         uses: apple-actions/import-codesign-certs@v3
         with:
