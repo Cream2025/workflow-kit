@@ -70,9 +70,8 @@ runs:
     # (2) 워크로드 설치
     - name: Dotnet Workload Restore
       run: |
-        dotnet workload restore
+        dotnet workload restore ${{ inputs.work_dir }}/${{ inputs.project_name }}/${{ inputs.project_name }}.csproj
       shell: bash
-      working-directory: ${{ inputs.work_dir }}
 
     # (3) 빌드 + 아카이브 (.xcarchive → .app)
     - name: Build MAUI iOS project
