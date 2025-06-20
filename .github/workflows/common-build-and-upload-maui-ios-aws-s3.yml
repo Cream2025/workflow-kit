@@ -92,6 +92,7 @@ jobs:
           security find-identity -v -p codesigning
   
       - name: Install provisioning profile
+        id: install-provisioning-profile
         run: |
           PP_PATH="$RUNNER_TEMP/profile.mobileprovision"
           echo "${{ secrets.IOS_PROVISIONING_BASE64 }}" | base64 -d > "$PP_PATH"
@@ -104,6 +105,7 @@ jobs:
           cp "$PP_PATH" "$HOME/Library/MobileDevice/Provisioning Profiles/$PP_UUID.mobileprovision"
           
           echo "Provisioning profile installed with UUID: $PP_UUID"
+          echo "uuid=$PP_UUID" >> $GITHUB_OUTPUT
 
       
       - name: Checkout code from ${{ inputs.branch }}
@@ -132,7 +134,7 @@ jobs:
           runtime_identifier: ${{ inputs.runtime_identifier }}
           artifact_name: ${{ inputs.artifact_name }}
           codesign_key: ${{ inputs.codesign_key }}
-          codesign_provision: ${{ inputs.codesign_provision }}
+          codesign_provision: ${{ steps.install-provisioning-profile.outputs.uuid }}
           version: ${{ inputs.version }}
           application_display_version: ${{ steps.increment-ios-display-version.outputs.new_value }}
           publish_dir: ${{ inputs.publish_dir }}
