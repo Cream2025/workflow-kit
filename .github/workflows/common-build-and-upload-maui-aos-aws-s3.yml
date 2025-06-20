@@ -1,0 +1,115 @@
+name: Build Maui Android Platform And Upload to AWS S3
+
+on:
+  workflow_call:
+    inputs:
+      branch:
+        required: true
+        type: string
+      work_dir:
+        required: true
+        type: string
+      project_name:
+        required: true
+        type: string
+      target_framework:
+        required: true
+        type: string
+      artifact_name:
+        required: true
+        type: string
+      s3_bucket:
+        required: true
+        type: string
+      s3_upload_upper_dir:
+        required: true
+        type: string
+      publish_dir:
+        required: false
+        default: publish
+        type: string
+      build_configuration:
+        required: false
+        default: Release
+        type: string
+      aws_region:
+        required: false
+        default: ap-northeast-2
+        type: string
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+    outputs:
+      s3_upload_path:
+        description: S3 Upload Path(업로드한 경로)
+        value: ${{ jobs.build-and-upload-maui-aos-aws-s3.outputs.s3_upload_path }}
+      s3_upload_url:
+        description: S3 Upload Url(다운로드 받을 수 있는 url)
+        value: ${{ jobs.build-and-upload-maui-aos-aws-s3.outputs.s3_upload_url }}
+
+jobs:
+  build-and-upload-maui-aos-aws-s3:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    outputs:
+      s3_upload_path: ${{ steps.set-s3-upload-value.outputs.s3_upload_path }}
+      s3_upload_url: ${{ steps.set-s3-upload-value.outputs.s3_upload_url }}
+
+    env:
+      S3_UPLOAD_PATH: ${{ inputs.s3_upload_upper_dir }}/${{ inputs.branch }}/aos/${{ inputs.artifact_name }}
+
+    steps:
+      - name: Checkout code from ${{ inputs.branch }}
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.nuget/packages
+            C:\\Users\\runneradmin\\.nuget\\packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.x'
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            aws-region: ${{ inputs.aws_region }}
+
+      - name: Build Maui Android Platform
+        uses: Cream2025/workflow-kit/.github/actions/common/build/maui/android@main
+        with:
+          work_dir: ${{ inputs.work_dir }}
+          project_name: ${{ inputs.project_name }}
+          target_framework: ${{ inputs.target_framework }}
+          artifact_name: ${{ inputs.artifact_name }}
+          publish_dir: ${{ inputs.publish_dir }}
+          build_configuration: ${{ inputs.build_configuration }}
+
+      - name: Upload Artifact to AWS S3
+        uses: Cream2025/workflow-kit/.github/actions/common/upload/aws-s3@main
+        with:
+          upload_file_path: ${{ inputs.publish_dir }}/${{ inputs.artifact_name }}
+          aws_region: ${{ inputs.aws_region }}
+          s3_bucket: ${{ inputs.s3_bucket }}
+          s3_upload_path: ${{ env.S3_UPLOAD_PATH }}
+
+      - name: Set S3 Upload Value Output
+        id: set-s3-upload-value
+        run: |
+          echo "s3_upload_path=$S3_UPLOAD_PATH" >> $GITHUB_OUTPUT
+          echo "s3_upload_url=https://${{ inputs.s3_bucket }}.s3.${{ inputs.aws_region }}.amazonaws.com/$S3_UPLOAD_PATH" >> $GITHUB_OUTPUT
+        shell: bash
+
