@@ -27,19 +27,19 @@ inputs:
 
   codesign_key:
     required: true
-    description: CodesignKey (예: Apple Distribution: …)
+    description: CodesignKey (예 Apple Distribution …)
 
   codesign_provision:
     required: true
-    description: CodesignProvision (예: Peace Production)
+    description: CodesignProvision (예 Peace Production)
 
   version:
     required: true
-    description: ApplicationVersion (예: 1.1.0)
+    description: ApplicationVersion (예 1.1.0)
 
   application_display_version:
     required: true
-    description: ApplicationDisplayVersion (예: 305)
+    description: ApplicationDisplayVersion (예 305)
 
   publish_dir:
     required: false
