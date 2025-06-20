@@ -1,0 +1,62 @@
+name: Build Maui iOS Platform
+description: MAUI iOS Platform 빌드하는 작업
+
+inputs:
+  work_dir:
+    required: true
+    description: 빌드할 working directory
+  project_name:
+    required: true
+    description: 빌드할 프로젝트명
+  target_framework:
+    required: true
+    description: 타겟 프레임워크
+  runtime_identifier:
+    required: false
+    default: ios-arm64
+    description: Runtime Identifier
+  artifact_name:
+    required: true
+    description: 압축 파일명
+  codesign_key:
+    required: false
+    description: Code signing key
+  codesign_provision:
+    required: false
+    description: Code signing provision profile
+  version:
+    required: false
+    description: Application Version
+  publish_dir:
+    required: false
+    default: publish
+    description: output 경로
+  build_configuration:
+    required: false
+    default: Release
+    description: Build Configuration
+
+runs:
+  using: "composite"
+  steps:
+    - name: Restore dependencies
+      run: dotnet restore ${{ inputs.work_dir }}/${{ inputs.project_name }}/${{ inputs.project_name }}.csproj
+      shell: bash
+
+    - name: Build MAUI iOS project
+      run: |
+        dotnet publish ${{ inputs.work_dir }}/${{ inputs.project_name }}/${{ inputs.project_name }}.csproj \
+          -c ${{ inputs.build_configuration }} \
+          -f ${{ inputs.target_framework }} \
+          -o ${{ inputs.publish_dir }} \
+          -p:RuntimeIdentifier=${{ inputs.runtime_identifier }} \
+          -p:CodesignKey="${{ inputs.codesign_key }}" \
+          -p:CodesignProvision="${{ inputs.codesign_provision }}" \
+          -p:ApplicationVersion=${{ inputs.version }}
+      shell: bash
+
+    - name: Archive build output
+      run: |
+        zip -r ${{ inputs.publish_dir }}/${{ inputs.artifact_name }} ${{ inputs.publish_dir }}
+      shell: bash
+
