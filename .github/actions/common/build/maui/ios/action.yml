@@ -67,12 +67,7 @@ runs:
         cp "$PP_PATH" "$HOME/Library/MobileDevice/Provisioning Profiles/"
       shell: bash
 
-    # (2) 의존성 복원
-    - name: Restore dependencies
-      run: dotnet restore ${{ inputs.work_dir }}/${{ inputs.project_name }}/${{ inputs.project_name }}.csproj
-      shell: bash
-
-    # (3) 빌드 + 아카이브 (.xcarchive → .app)
+    # (2) 빌드 + 아카이브 (.xcarchive → .app)
     - name: Build MAUI iOS project
       run: |
         dotnet publish ${{ inputs.work_dir }}/${{ inputs.project_name }}/${{ inputs.project_name }}.csproj \
@@ -88,7 +83,7 @@ runs:
           -p:ApplicationDisplayVersion=${{ inputs.application_display_version }}
       shell: bash
 
-    # (4) IPA 패키징 (Payload/*.app → .ipa)
+    # (3) IPA 패키징 (Payload/*.app → .ipa)
     - name: Create .ipa
       run: |
         APP_NAME=$(ls ${{ inputs.publish_dir }} | grep '\.app$' | head -n1)
@@ -97,7 +92,7 @@ runs:
         /usr/bin/zip -qr "${{ inputs.publish_dir }}/${{ inputs.artifact_name }}.ipa" Payload
       shell: bash
 
-    # (5) 아카이브(.ipa) 업로드 준비 (Caller workflow가 artifacts/upload 하도록)
+    # (4) 아카이브(.ipa) 업로드 준비 (Caller workflow가 artifacts/upload 하도록)
     - name: List output files
       run: ls -R ${{ inputs.publish_dir }}
       shell: bash
