@@ -67,7 +67,13 @@ runs:
         cp "$PP_PATH" "$HOME/Library/MobileDevice/Provisioning Profiles/"
       shell: bash
 
-    # (2) 빌드 + 아카이브 (.xcarchive → .app)
+    # (2) 워크로드 설치
+    - name: Dotnet Workload Restore
+      run: |
+        dotnet workload restore
+      shell: bash
+
+    # (3) 빌드 + 아카이브 (.xcarchive → .app)
     - name: Build MAUI iOS project
       run: |
         dotnet publish ${{ inputs.work_dir }}/${{ inputs.project_name }}/${{ inputs.project_name }}.csproj \
