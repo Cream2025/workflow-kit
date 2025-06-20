@@ -75,7 +75,7 @@ jobs:
 
       - name: Increment Application Display Version
         id: increment-ios-display-version
-        uses: Cream2025/workflow-kit/.github/actions/util/increment-var-counter@main
+        uses: Cream2025/workflow-kit/.github/actions/utils/increment-var-counter@main
         with:
           repository_var_name: ${{ inputs.ios_display_version_name }}
           github_token: ${{ secrets.GIT_BOT_TOKEN }}
