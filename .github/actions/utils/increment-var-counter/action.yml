@@ -1,0 +1,38 @@
+name: Increment Repoisitory Variable Counter
+description: Repository의 variable 값을 1 증가시키는 작업
+
+inputs:
+  repository_var_name:
+    required: true
+    description: 증가시키고 싶은 Repository의 var 이름
+  github_token:
+    required: true
+    description: 조회/수정할 github token
+
+runs:
+  using: "composite"
+  steps:
+    - name: Get Current Variable
+      id: get-var-value
+      run: |
+        var_name="{{ inputs.repository_var_name }}"
+        var_json=$(curl -s -H "Authorization: Bearer ${{ inputs.github_token }}" \
+          -H "Accept: application/vnd.github+json" \
+          https://api.github.com/repos/${{ github.repository }}/actions/variables/$var_name)
+        var_value=$(echo $var_json | jq -r '.value')
+        echo "Current value: $var_value"
+        echo "var_value=$var_value" >> $GITHUB_OUTPUT
+      shell: bash
+
+    - name: Increment And Set Variable
+      run: |
+        var_name="{{ inputs.repository_var_name }}"
+        new_value=$(( ${{ steps.get-var-value.outputs.var_value }} + 1 ))
+        echo "New value: $new_value"
+
+        curl -X PATCH -H "Authorization: Bearer ${{ inputs.github_token }}" \
+          -H "Accept: application/vnd.github+json" \
+          -H "Content-Type: application/json" \
+          https://api.github.com/repos/${{ github.repository }}/actions/variables/$var_name \
+          -d "{\"name\":\"$var_name\", \"value\":\"$new_value\"}"
+      shell: bash
