@@ -37,7 +37,7 @@ runs:
     - name: Restore dependencies
       shell: bash
       run: |
-        dotnet restore "${{ inputs.work_dir }}/${{ inputs.project_name }}/${{ inputs.project_name }}.csproj"
+        dotnet restore "${{ inputs.work_dir }}/${{ inputs.project_name }}/${{ inputs.project_name }}.csproj" -f "${{ inputs.target_framework }}"
 
     # 2) Publish – APK only
     - name: Publish MAUI APK
