@@ -43,15 +43,19 @@ on:
         required: true
     outputs:
       s3_upload_path:
-        description: 'S3 Upload Path'
+        description: S3 Upload Path(업로드한 경로)
         value: ${{ jobs.build-and-upload-maui-win-aws-s3.outputs.s3_upload_path }}
+      s3_upload_url:
+        description: S3 Upload Url(다운로드 받을 수 있는 url)
+        value: ${{ jobs.build-and-upload-maui-win-aws-s3.outputs.s3_upload_url }}
 
 jobs:
   build-and-upload-maui-win-aws-s3:
     runs-on: windows-latest
     timeout-minutes: 30
     outputs:
-      s3_upload_path: ${{ steps.set-s3-upload-path.outputs.s3_upload_path }}
+      s3_upload_path: ${{ steps.set-s3-upload-value.outputs.s3_upload_path }}
+      s3_upload_url: ${{ steps.set-s3-upload-value.outputs.s3_upload_url }}
 
     env:
       S3_UPLOAD_PATH: ${{ inputs.s3_upload_upper_dir }}/${{ inputs.branch }}/win/${{ inputs.artifact_name }}
@@ -102,7 +106,9 @@ jobs:
           s3_bucket: ${{ inputs.s3_bucket }}
           s3_upload_path: ${{ env.S3_UPLOAD_PATH }}
 
-      - name: Set S3 Upload Path Output
-        id: set-s3-upload-path
-        run: echo "s3_upload_path=$S3_UPLOAD_PATH" >> $GITHUB_OUTPUT
+      - name: Set S3 Upload Value Output
+        id: set-s3-upload-value
+        run: |
+          echo "s3_upload_path=$S3_UPLOAD_PATH" >> $GITHUB_OUTPUT
+          echo "s3_upload_url=https://${{ inputs.s3_bucket }}.s3.${{ inputs.aws_region }}.amazonaws.com/$S3_UPLOAD_PATH" >> $GITHUB_OUTPUT
         shell: bash
