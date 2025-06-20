@@ -43,7 +43,9 @@ jobs:
             VERSION=$(echo "$TAG" | awk -F '-' '{print $NF}')
           else
             CURRENT_BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF##refs/heads/}}"
-            VERSION="$INPUT_VERSION.$DATETIME"
+            if [[ "$BRANCH" != "live" ]]; then
+              VERSION="$INPUT_VERSION.$DATETIME"
+            fi
 
             echo "Validating branch..."
             echo "Current Branch: $CURRENT_BRANCH"
