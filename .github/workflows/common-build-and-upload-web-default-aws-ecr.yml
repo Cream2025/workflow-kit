@@ -60,7 +60,7 @@ jobs:
             aws-region: ${{ inputs.aws_region }}
 
       - name: Build Web Default
-        uses: ./.github/actions/common/build/web/default
+        uses: Cream2025/workflow-kit/.github/actions/common/build/web/default@main
         with:
           work_dir: ${{ inputs.work_dir }}
           project_name: ${{ inputs.project_name }}
@@ -68,7 +68,7 @@ jobs:
           build_configuration: ${{ inputs.build_configuration }}
 
       - name: Upload Image to AWS ECR
-        uses: ./.github/actions/common/upload/aws-ecr
+        uses: Cream2025/workflow-kit/.github/actions/common/upload/aws-ecr@main
         with:
           work_dir: ${{ inputs.work_dir }}
           image_url: ${{ env.IMAGE_URL }}
