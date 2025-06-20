@@ -51,15 +51,6 @@ inputs:
     default: Release
     description: Build Configuration
 
-  # --- 신규 (인증서‧프로파일) 입력 ---
-  ios_cert_base64:
-    required: true
-    description: Base64‑encoded .p12
-
-  ios_cert_password:
-    required: true
-    description: .p12 비밀번호
-
   ios_provisioning_base64:
     required: true
     description: Base64‑encoded .mobileprovision
@@ -67,14 +58,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    # (1) 코드 서명 인증서 가져오기
-    - name: Import Apple distribution certificate
-      uses: apple-actions/import-codesign-certs@v3
-      with:
-        p12-file-base64: ${{ inputs.ios_cert_base64 }}
-        p12-password: ${{ inputs.ios_cert_password }}
-
-    # (2) 프로비저닝 프로파일 설치
+    # (1) 프로비저닝 프로파일 설치
     - name: Install provisioning profile
       run: |
         PP_PATH="$RUNNER_TEMP/profile.mobileprovision"
@@ -83,12 +67,12 @@ runs:
         cp "$PP_PATH" "$HOME/Library/MobileDevice/Provisioning Profiles/"
       shell: bash
 
-    # (3) 의존성 복원
+    # (2) 의존성 복원
     - name: Restore dependencies
       run: dotnet restore ${{ inputs.work_dir }}/${{ inputs.project_name }}/${{ inputs.project_name }}.csproj
       shell: bash
 
-    # (4) 빌드 + 아카이브 (.xcarchive → .app)
+    # (3) 빌드 + 아카이브 (.xcarchive → .app)
     - name: Build MAUI iOS project
       run: |
         dotnet publish ${{ inputs.work_dir }}/${{ inputs.project_name }}/${{ inputs.project_name }}.csproj \
@@ -104,7 +88,7 @@ runs:
           -p:ApplicationDisplayVersion=${{ inputs.application_display_version }}
       shell: bash
 
-    # (5) IPA 패키징 (Payload/*.app → .ipa)
+    # (4) IPA 패키징 (Payload/*.app → .ipa)
     - name: Create .ipa
       run: |
         APP_NAME=$(ls ${{ inputs.publish_dir }} | grep '\.app$' | head -n1)
@@ -113,7 +97,7 @@ runs:
         /usr/bin/zip -qr "${{ inputs.publish_dir }}/${{ inputs.artifact_name }}.ipa" Payload
       shell: bash
 
-    # (6) 아카이브(.ipa) 업로드 준비 (Caller workflow가 artifacts/upload 하도록)
+    # (5) 아카이브(.ipa) 업로드 준비 (Caller workflow가 artifacts/upload 하도록)
     - name: List output files
       run: ls -R ${{ inputs.publish_dir }}
       shell: bash

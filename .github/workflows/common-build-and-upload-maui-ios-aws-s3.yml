@@ -59,6 +59,13 @@ jobs:
     runs-on: macos-latest
     timeout-minutes: 30
     steps:
+       # 코드 서명 인증서 가져오기
+      - name: Import Apple distribution certificate
+        uses: apple-actions/import-codesign-certs@v3
+        with:
+          p12-file-base64: ${{ secrets.IOS_CERT_BASE64 }}
+          p12-password: ${{ secrets.IOS_CERT_PASSWORD }}
+      
       - name: Checkout code from ${{ inputs.branch }}
         uses: actions/checkout@v4
         with:
@@ -76,7 +83,6 @@ jobs:
           repository_var_name: ${{ inputs.ios_display_version_name }}
           github_token: ${{ secrets.GIT_BOT_TOKEN }}
 
-      
       - name: Build Maui iOS Platform
         uses: Cream2025/workflow-kit/.github/actions/common/build/maui/ios@main
         with:
@@ -91,8 +97,6 @@ jobs:
           application_display_version: ${{ steps.increment-ios-display-version.outputs.new_value }}
           publish_dir: ${{ inputs.publish_dir }}
           build_configuration: ${{ inputs.build_configuration }}
-          ios_cert_base64: ${{ secrets.IOS_CERT_BASE64 }}
-          ios_cert_password: ${{ secrets.IOS_CERT_PASSWORD }}
           ios_provisioning_base64: ${{ secrets.IOS_PROVISIONING_BASE64 }}
 
 
