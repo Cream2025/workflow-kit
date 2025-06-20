@@ -42,7 +42,7 @@ on:
 jobs:
   build-and-upload-web-default-aws-ecr:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 10
     outputs:
       image_url: ${{ steps.set-image-url.outputs.image_url }}
 
