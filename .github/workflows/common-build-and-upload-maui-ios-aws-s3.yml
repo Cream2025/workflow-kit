@@ -26,13 +26,16 @@ on:
         default: ios-arm64
         type: string
       codesign_key:
-        required: false
+        required: true
         type: string
       codesign_provision:
-        required: false
+        required: true
         type: string
       version:
-        required: false
+        required: true
+        type: string
+      application_display_version:
+        required: true
         type: string
       s3_bucket:
         required: true
@@ -52,30 +55,25 @@ on:
         required: false
         default: ap-northeast-2
         type: string
+      ios_cert_base64:
+        required: true
+        type: string
+      ios_cert_password:
+        required: true
+        type: string
+      ios_provisioning_base64:
+        required: true
+        type: string
     secrets:
       AWS_ACCESS_KEY_ID:
         required: true
       AWS_SECRET_ACCESS_KEY:
         required: true
-    outputs:
-      s3_upload_path:
-        description: S3 Upload Path(업로드한 경로)
-        value: ${{ jobs.build-and-upload-maui-ios-aws-s3.outputs.s3_upload_path }}
-      s3_upload_url:
-        description: S3 Upload Url(다운로드 받을 수 있는 url)
-        value: ${{ jobs.build-and-upload-maui-ios-aws-s3.outputs.s3_upload_url }}
 
 jobs:
   build-and-upload-maui-ios-aws-s3:
     runs-on: macos-latest
     timeout-minutes: 30
-    outputs:
-      s3_upload_path: ${{ steps.set-s3-upload-value.outputs.s3_upload_path }}
-      s3_upload_url: ${{ steps.set-s3-upload-value.outputs.s3_upload_url }}
-
-    env:
-      S3_UPLOAD_PATH: ${{ inputs.s3_upload_upper_dir }}/${{ inputs.branch }}/ios/${{ inputs.artifact_name }}
-
     steps:
       - name: Checkout code from ${{ inputs.branch }}
         uses: actions/checkout@v4
@@ -105,21 +103,11 @@ jobs:
           codesign_key: ${{ inputs.codesign_key }}
           codesign_provision: ${{ inputs.codesign_provision }}
           version: ${{ inputs.version }}
+          application_display_version: ${{ inputs.application_display_version }}
           publish_dir: ${{ inputs.publish_dir }}
           build_configuration: ${{ inputs.build_configuration }}
+          ios_cert_base64: ${{ inputs.ios_cert_base64 }}
+          ios_cert_password: ${{ inputs.ios_cert_password }}
+          ios_provisioning_base64: ${{ inputs.ios_provisioning_base64 }}
 
-      - name: Upload Artifact to AWS S3
-        uses: Cream2025/workflow-kit/.github/actions/common/upload/aws-s3@main
-        with:
-          upload_file_path: ${{ inputs.publish_dir }}/${{ inputs.artifact_name }}
-          aws_region: ${{ inputs.aws_region }}
-          s3_bucket: ${{ inputs.s3_bucket }}
-          s3_upload_path: ${{ env.S3_UPLOAD_PATH }}
-
-      - name: Set S3 Upload Value Output
-        id: set-s3-upload-value
-        run: |
-          echo "s3_upload_path=$S3_UPLOAD_PATH" >> $GITHUB_OUTPUT
-          echo "s3_upload_url=https://${{ inputs.s3_bucket }}.s3.${{ inputs.aws_region }}.amazonaws.com/$S3_UPLOAD_PATH" >> $GITHUB_OUTPUT
-        shell: bash
 

@@ -35,7 +35,11 @@ inputs:
 
   version:
     required: true
-    description: ApplicationVersion (예: 1.0.7)
+    description: ApplicationVersion (예: 1.1.0)
+
+  application_display_version:
+    required: true
+    description: ApplicationDisplayVersion (예: 305)
 
   publish_dir:
     required: false
@@ -48,15 +52,15 @@ inputs:
     description: Build Configuration
 
   # --- 신규 (인증서‧프로파일) 입력 ---
-  cert_p12_base64:
+  ios_cert_base64:
     required: true
     description: Base64‑encoded .p12
 
-  cert_p12_password:
+  ios_cert_password :
     required: true
     description: .p12 비밀번호
 
-  provisioning_base64:
+  ios_provisioning_base64:
     required: true
     description: Base64‑encoded .mobileprovision
 
@@ -97,7 +101,7 @@ runs:
           -p:CodesignProvision="${{ inputs.codesign_provision }}" \
           -p:ApplicationVersion=${{ inputs.version }} \
           -p:GenerateBundleVersion=true \
-          -p:ApplicationDisplayVersion=${{ inputs.version }}
+          -p:ApplicationDisplayVersion=${{ inputs.application_display_version }}
       shell: bash
 
     # (5) IPA 패키징 (Payload/*.app → .ipa)
