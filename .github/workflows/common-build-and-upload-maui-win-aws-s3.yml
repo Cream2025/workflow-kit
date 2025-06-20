@@ -105,3 +105,4 @@ jobs:
       - name: Set S3 Upload Path Output
         id: set-s3-upload-path
         run: echo "s3_upload_path=$S3_UPLOAD_PATH" >> $GITHUB_OUTPUT
+        shell: bash
