@@ -1,0 +1,44 @@
+name: Build Maui Windows Platform
+description: Maui Windows Platform 빌드하는 작업
+
+inputs:
+  work_dir:
+    required: true
+    description: 빌드할 working directory
+  project_name:
+    required: true
+    description: 빌드할 프로젝트명
+  target_framework:
+    required: true
+    description: 타겟 프레임워크
+  artifact_name:
+    required: true
+    description: 압축 파일명
+  publish_dir:
+    required: false
+    default: publish
+    description: output 경로
+  build_configuration:
+    required: false
+    default: Release
+    description: Build Configuration
+
+runs:
+  using: "composite"
+  steps:
+    - name: Restore dependencies
+      run: dotnet restore ${{ inputs.work_dir }}/${{ inputs.project_name }}/${{ inputs.project_name }}.csproj
+      shell: bash
+
+    - name: Build MAUI Windows project
+      run: |
+        dotnet build ${{ inputs.work_dir }}/${{ inputs.project_name }}/${{ inputs.project_name }}.csproj `
+          -c ${{ inputs.build_configuration }} `
+          -f ${{ inputs.target_framework }} `
+          -o ${{ inputs.publish_dir }}
+      shell: bash
+
+    - name: Archive build output
+      run: |
+        Compress-Archive -Path ${{ inputs.publish_dir }}\* -DestinationPath ${{ inputs.publish_dir }}\${{ inputs.artifact_name }}
+      shell: bash
