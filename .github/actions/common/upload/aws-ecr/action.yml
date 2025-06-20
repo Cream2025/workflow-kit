@@ -1,0 +1,32 @@
+name: Upload Docker Image to AWS ECR
+description: Docker Image를 AWS ECR에 업로드하는 작업
+
+inputs:
+  work_dir:
+    required: true
+    description: 빌드할 working directory
+  image_url:
+    required: true
+    description: Docker Image URL
+  aws_region:
+    required: true
+    description: 업로드할 ECR의 region
+  ecr_registry:
+    required: true
+    description: ECR 레지스트리 도메인
+
+runs:
+  using: "composite"
+  steps:
+    - name: Login to Amazon ECR (manual)
+      run: |
+        aws ecr get-login-password --region ${{ inputs.aws_region }} | \
+          docker login --username AWS --password-stdin ${{ inputs.ecr_registry }}
+      shell: bash
+
+    - name: Push Docker image
+      run: |
+        docker push ${{ inputs.image_url }}
+      shell: bash
+      working-directory: ${{ inputs.work_dir }}
+      

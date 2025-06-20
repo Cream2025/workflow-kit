@@ -1,0 +1,28 @@
+name: Build Web Docker Image
+description: Dockerfile을 사용하여 web 빌드하는 작업
+
+inputs:
+  work_dir:
+    required: true
+    description: 빌드할 working directory
+  project_name:
+    required: true
+    description: 빌드할 프로젝트명
+  image_url:
+    required: true
+    description: Docker Image URL
+  build_configuration:
+    required: false
+    default: Release
+    description: Build Configuration
+
+runs:
+  using: "composite"
+  steps:
+    - name: Build Docker image
+      run: |
+        docker build -f ${{ inputs.project_name }}/Dockerfile . \
+          -t ${{ inputs.image_url }} \
+          --build-arg BUILD_CONFIGURATION=${{ inputs.build_configuration }}
+      shell: bash
+      working-directory: ${{ inputs.work_dir }}

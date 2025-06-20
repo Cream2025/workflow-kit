@@ -1,0 +1,61 @@
+name: Get Version by label
+
+on:
+  workflow_call:
+    inputs:
+      branch:
+        required: true
+        description: 브랜치
+        type: string
+    outputs:
+      version:
+        description: 버전 정보
+        value: ${{ jobs.get-version.outputs.version }}
+
+jobs:
+  get-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get-version.outputs.version }}
+
+    env:
+      BRANCH: ${{ inputs.branch }}
+      
+    steps:
+      - name: Set current datetime
+        id: datetime
+        
+        run: |
+          DATE=$(date +"%y%m%d%H%M%S")
+          echo "date=$DATE" >> $GITHUB_OUTPUT
+          
+      - name: Get version and validate
+        id: get-version
+
+        env:
+          DATETIME: ${{ steps.datetime.outputs.date }}
+        
+        run: |
+          echo "All labels:"
+          echo '${{ toJson(github.event.pull_request.labels) }}' | jq
+          LABEL=""
+          for label in $(echo '${{ toJson(github.event.pull_request.labels) }}' | jq -r '.[].name'); do
+            if [[ "$label" =~ ^${BRANCH}-(v[0-9]+\.[0-9]+)$ ]]; then
+              LABEL=$label
+              VERSION="${BASH_REMATCH[1]}"
+              break
+            fi
+          done
+
+          if [ -z "$LABEL" ]; then
+            echo "No matching version label found. Label must be '${BRANCH}-v<숫자>.<숫자>' format.(ex. ${BRANCH}-v1.0)"
+            exit 1
+          fi
+
+          # live인 경우에는 뒷 버전 숫자(시간)를 뺌
+          if [[ "$BRANCH" != "live" ]]; then
+            VERSION="${VERSION}.${DATETIME}"
+          fi
+
+          echo "VERSION: $VERSION"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT

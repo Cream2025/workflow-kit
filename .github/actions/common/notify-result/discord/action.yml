@@ -1,0 +1,61 @@
+name: Notify Result by Discord
+description: workflow 수행 결과를 Discord 채널에 전송
+
+inputs:
+  failed_jobs:
+    required: true
+    description: 실패한 job 내역.(ex. job1,job2)
+  title:
+    required: true
+    description: 완료/실패에 대한 제목
+  discord_webhook_url:
+    required: true
+    description: Discord 웹훅 url
+  version:
+    required: false
+    description: 배포한 버전
+
+runs:
+  using: "composite"
+  steps:
+    - name: Create Fail Message
+      id: create-message
+      if: inputs.failed_jobs != ''
+      run: |
+        github_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+        jobs="${{ inputs.failed_jobs }}"
+        formatted_jobs=""
+        IFS=',' read -ra JOB_ARRAY <<< "$jobs"
+        for job in "${JOB_ARRAY[@]}"; do
+          formatted_jobs+="  - $job\n"
+        done
+
+        message="**[😢 배포 실패]**\n"
+        message+="- 서비스: `${{ inputs.title }}`\n"
+        message+="- 실패한 job:\n$formatted_jobs"
+        message+="👉[workflow 확인]($github_url)"
+
+        echo "message=$message" >> $GITHUB_OUTPUT
+      shell: bash
+
+    - name: Create Success Message
+      id: create-message
+      if: inputs.failed_jobs == ''
+      run: |
+        message="**[🐣 배포 성공]**\n"
+        message+="- 서비스: `${{ inputs.title }}`\n"
+        message+="- 버전: `${{ inputs.version }}`"
+
+        echo "message=$message" >> $GITHUB_OUTPUT
+      shell: bash
+
+    - name: Send Message
+      run: |
+        message="${{ steps.create-message.outputs.message }}"
+        curl -H "Content-Type: application/json" \
+             -X POST \
+             -d "{\"content\": \"$message\"}" \
+             "${{ inputs.discord_webhook_url }}"
+      shell: bash
+      
