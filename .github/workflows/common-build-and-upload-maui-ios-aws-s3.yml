@@ -21,10 +21,6 @@ on:
       artifact_name:
         required: true
         type: string
-      runtime_identifier:
-        required: false
-        default: ios-arm64
-        type: string
       codesign_key:
         required: true
         type: string
@@ -36,24 +32,6 @@ on:
         type: string
       application_display_version:
         required: true
-        type: string
-      s3_bucket:
-        required: true
-        type: string
-      s3_upload_upper_dir:
-        required: true
-        type: string
-      publish_dir:
-        required: false
-        default: publish
-        type: string
-      build_configuration:
-        required: false
-        default: Release
-        type: string
-      aws_region:
-        required: false
-        default: ap-northeast-2
         type: string
       ios_cert_base64:
         required: true
@@ -67,11 +45,19 @@ on:
       ios_display_version_name:
         required: true
         type: string
+      runtime_identifier:
+        required: false
+        default: ios-arm64
+        type: string
+      publish_dir:
+        required: false
+        default: publish
+        type: string
+      build_configuration:
+        required: false
+        default: Release
+        type: string
     secrets:
-      AWS_ACCESS_KEY_ID:
-        required: true
-      AWS_SECRET_ACCESS_KEY:
-        required: true
       GIT_BOT_TOKEN:
         required: true
 
