@@ -60,12 +60,41 @@ jobs:
     runs-on: macos-latest
     timeout-minutes: 30
     steps:
-       # 코드 서명 인증서 가져오기
-      - name: Import Apple distribution certificate
-        uses: apple-actions/import-codesign-certs@v3
-        with:
-          p12-file-base64: ${{ secrets.IOS_CERT_BASE64 }}
-          p12-password: ${{ secrets.IOS_CERT_PASSWORD }}
+
+      - name: Install Apple Certificate
+        env:
+          P12_DISTRIBUTION_CERTIFICATE_BASE64: ${{ secrets.IOS_CERT_BASE64 }}
+          P12_DISTRIBUTION_CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERT_PASSWORD }}
+        run: |
+          # 인증서 파일 생성
+          CERTIFICATE_PATH=$RUNNER_TEMP/distribution_certificate.p12
+          echo "$P12_DISTRIBUTION_CERTIFICATE_BASE64" | base64 --decode > $CERTIFICATE_PATH
+          
+          # 기본 키체인 사용
+          KEYCHAIN_PATH=~/Library/Keychains/login.keychain-db
+          
+          # 인증서 임포트
+          security import $CERTIFICATE_PATH -P "$P12_DISTRIBUTION_CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "" $KEYCHAIN_PATH
+          
+          # 인증서 확인
+          echo "=== Installed certificates ==="
+          security find-identity -v -p codesigning
+  
+      - name: Install provisioning profile
+        run: |
+          PP_PATH="$RUNNER_TEMP/profile.mobileprovision"
+          echo "${{ secrets.IOS_PROVISIONING_BASE64 }}" | base64 -d > "$PP_PATH"
+          
+          # 프로비저닝 프로파일 UUID 추출
+          PP_UUID=$(security cms -D -i "$PP_PATH" | plutil -extract UUID xml1 -o - - | xmllint --xpath "string(//string)" -)
+          
+          # 프로비저닝 프로파일 설치
+          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
+          cp "$PP_PATH" "$HOME/Library/MobileDevice/Provisioning Profiles/$PP_UUID.mobileprovision"
+          
+          echo "Provisioning profile installed with UUID: $PP_UUID"
+
       
       - name: Checkout code from ${{ inputs.branch }}
         uses: actions/checkout@v4
