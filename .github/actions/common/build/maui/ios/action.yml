@@ -56,7 +56,7 @@ inputs:
     required: true
     description: Base64‑encoded .p12
 
-  ios_cert_password :
+  ios_cert_password:
     required: true
     description: .p12 비밀번호
 
