@@ -21,22 +21,10 @@ on:
       artifact_name:
         required: true
         type: string
-      codesign_key:
-        required: true
-        type: string
       codesign_provision:
         required: true
         type: string
       version:
-        required: true
-        type: string
-      ios_cert_base64:
-        required: true
-        type: string
-      ios_cert_password:
-        required: true
-        type: string
-      ios_provisioning_base64:
         required: true
         type: string
       ios_display_version_name:
@@ -56,6 +44,14 @@ on:
         type: string
     secrets:
       GIT_BOT_TOKEN:
+        required: true
+      CODESIGN_KEY:
+        required: true
+      IOS_CERT_BASE64:
+        required: true
+      IOS_CERT_PASSWORD:
+        required: true
+      IOS_PROVISIONING_BASE64:
         required: true
 
 jobs:
@@ -89,14 +85,14 @@ jobs:
           target_framework: ${{ inputs.target_framework }}
           runtime_identifier: ${{ inputs.runtime_identifier }}
           artifact_name: ${{ inputs.artifact_name }}
-          codesign_key: ${{ inputs.codesign_key }}
+          codesign_key: ${{ secrets.CODESIGN_KEY }}
           codesign_provision: ${{ inputs.codesign_provision }}
           version: ${{ inputs.version }}
           application_display_version: ${{ steps.increment-ios-display-version.outputs.new_value }}
           publish_dir: ${{ inputs.publish_dir }}
           build_configuration: ${{ inputs.build_configuration }}
-          ios_cert_base64: ${{ inputs.ios_cert_base64 }}
-          ios_cert_password: ${{ inputs.ios_cert_password }}
-          ios_provisioning_base64: ${{ inputs.ios_provisioning_base64 }}
+          ios_cert_base64: ${{ secrets.IOS_CERT_BASE64 }}
+          ios_cert_password: ${{ secrets.IOS_CERT_PASSWORD }}
+          ios_provisioning_base64: ${{ secrets.IOS_PROVISIONING_BASE64 }}
 
 
