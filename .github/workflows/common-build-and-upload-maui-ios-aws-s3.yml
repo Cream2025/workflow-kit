@@ -121,7 +121,7 @@ jobs:
           target_framework: ${{ inputs.target_framework }}
           runtime_identifier: ${{ inputs.runtime_identifier }}
           artifact_name: ${{ inputs.artifact_name }}
-          codesign_key: ${{ secrets.CODESIGN_KEY }}
+          codesign_key: ${{ inputs.codesign_key }}
           codesign_provision: ${{ inputs.codesign_provision }}
           version: ${{ inputs.version }}
           application_display_version: ${{ steps.increment-ios-display-version.outputs.new_value }}
