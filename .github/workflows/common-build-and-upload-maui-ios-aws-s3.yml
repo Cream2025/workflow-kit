@@ -64,6 +64,9 @@ on:
       ios_provisioning_base64:
         required: true
         type: string
+      ios_display_version_name:
+        required: true
+        type: string
     secrets:
       AWS_ACCESS_KEY_ID:
         required: true
@@ -87,17 +90,11 @@ jobs:
         with:
           dotnet-version: ${{ inputs.dotnet_version }}
 
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-            aws-region: ${{ inputs.aws_region }}
-
-      - name: Application Display Version
+      - name: Increment Application Display Version
+        id: increment-ios-display-version
         uses: Cream2025/workflow-kit/.github/actions/util/increment-var-counter@main
         with:
-          repository_var_name: ${{ inputs.repository_var_name }}
+          repository_var_name: ${{ inputs.ios_display_version_name }}
           github_token: ${{ secrets.GIT_BOT_TOKEN }}
 
       
@@ -112,7 +109,7 @@ jobs:
           codesign_key: ${{ inputs.codesign_key }}
           codesign_provision: ${{ inputs.codesign_provision }}
           version: ${{ inputs.version }}
-          application_display_version: ${{ inputs.application_display_version }}
+          application_display_version: ${{ needs.increment-ios-display-version.outputs.new_value }}
           publish_dir: ${{ inputs.publish_dir }}
           build_configuration: ${{ inputs.build_configuration }}
           ios_cert_base64: ${{ inputs.ios_cert_base64 }}
