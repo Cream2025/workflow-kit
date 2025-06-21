@@ -30,6 +30,15 @@ on:
       ios_display_version_name:
         required: true
         type: string
+      ios_cert_base64:
+        required: true
+        type: string
+      ios_cert_password:
+        required: true
+        type: string
+      ios_provisioning_base64:
+        required: true
+        type: string
       runtime_identifier:
         required: false
         default: ios-arm64
@@ -44,12 +53,6 @@ on:
         type: string
     secrets:
       GIT_BOT_TOKEN:
-        required: true
-      IOS_CERT_BASE64:
-        required: true
-      IOS_CERT_PASSWORD:
-        required: true
-      IOS_PROVISIONING_BASE64:
         required: true
       APPLE_ID_USERNAME:
         required: true
@@ -92,6 +95,8 @@ jobs:
           publish_dir: ${{ inputs.publish_dir }}
           build_configuration: ${{ inputs.build_configuration }}
           ios_provisioning_base64: ${{ secrets.IOS_PROVISIONING_BASE64 }}
+          ios_cert_base64: ${{ secrets.IOS_CERT_BASE64 }}
+          ios_cert_password: ${{ secrets.IOS_CERT_PASSWORD }}
 
   
       - name: Upload IPA using altool
