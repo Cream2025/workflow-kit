@@ -54,6 +54,10 @@ on:
         required: true
       IOS_PROVISIONING_BASE64:
         required: true
+      APPLE_ID_USERNAME:
+        required: true
+      APPLE_APP_SPECIFIC_PASSWORD:
+        required: true
 
 jobs:
   build-and-upload-maui-ios-aws-s3:
@@ -146,4 +150,10 @@ jobs:
           build_configuration: ${{ inputs.build_configuration }}
           ios_provisioning_base64: ${{ secrets.IOS_PROVISIONING_BASE64 }}
 
-
+  
+      - name: Upload IPA using altool
+        run: |
+          xcrun altool --upload-app --type ios \
+          -f ${{ inputs.publish_dir }}/${{ inputs.project_name }}.ipa \
+          -u "${{ secrets.APPLE_ID_USERNAME }}" \
+          -p "${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
