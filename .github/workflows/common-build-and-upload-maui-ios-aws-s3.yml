@@ -30,15 +30,6 @@ on:
       ios_display_version_name:
         required: true
         type: string
-      ios_cert_base64:
-        required: true
-        type: string
-      ios_cert_password:
-        required: true
-        type: string
-      ios_provisioning_base64:
-        required: true
-        type: string
       runtime_identifier:
         required: false
         default: ios-arm64
@@ -58,7 +49,13 @@ on:
         required: true
       APPLE_APP_SPECIFIC_PASSWORD:
         required: true
-
+      IOS_CERT_BASE64:
+        required: true
+      IOS_CERT_PASSWORD:
+        required: true
+      IOS_PROVISIONING_BASE64:
+        required: true
+        
 jobs:
   build-and-upload-maui-ios-aws-s3:
     runs-on: macos-latest
