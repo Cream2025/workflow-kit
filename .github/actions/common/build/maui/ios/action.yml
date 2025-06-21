@@ -37,6 +37,18 @@ inputs:
     required: true
     description: ApplicationDisplayVersion (예 305)
 
+  ios_provisioning_base64:
+    required: true
+    description: Base64‑encoded .mobileprovision
+    
+  ios_cert_base64:
+    required: true
+    description: Base64‑encoded p12 인증서
+    
+  ios_cert_password:
+    required: true
+    description: p12 인증서 패스워드
+    
   publish_dir:
     required: false
     default: publish
@@ -47,9 +59,6 @@ inputs:
     default: Release
     description: Build Configuration
 
-  ios_provisioning_base64:
-    required: true
-    description: Base64‑encoded .mobileprovision
 
 runs:
   using: "composite"
@@ -64,8 +73,8 @@ runs:
     # (1) 인증서 셋업
     - name: Install Apple Certificate
       env:
-        P12_DISTRIBUTION_CERTIFICATE_BASE64: ${{ secrets.IOS_CERT_BASE64 }}
-        P12_DISTRIBUTION_CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERT_PASSWORD }}
+        P12_DISTRIBUTION_CERTIFICATE_BASE64: ${{ inputs.ios_cert_base64 }}
+        P12_DISTRIBUTION_CERTIFICATE_PASSWORD: ${{ inputs.ios_cert_password }}
       run: |
         # 인증서 파일 생성
         CERTIFICATE_PATH=$RUNNER_TEMP/distribution_certificate.p12
@@ -96,7 +105,7 @@ runs:
       id: install-provisioning-profile
       run: |
         PP_PATH="$RUNNER_TEMP/profile.mobileprovision"
-        echo "${{ secrets.IOS_PROVISIONING_BASE64 }}" | base64 -d > "$PP_PATH"
+        echo "${{ inputs.ios_provisioning_base64 }}" | base64 -d > "$PP_PATH"
         
         # 프로비저닝 프로파일 UUID 추출
         PP_UUID=$(security cms -D -i "$PP_PATH" | plutil -extract UUID xml1 -o - - | xmllint --xpath "string(//string)" -)
