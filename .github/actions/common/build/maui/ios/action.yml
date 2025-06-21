@@ -142,12 +142,9 @@ runs:
           -p:ApplicationDisplayVersion=${{ inputs.application_display_version }}
       shell: bash
 
-    # (3) IPA 패키징 (Payload/*.app → .ipa)
-    - name: Create .ipa
+    # (3) IPA RENAME
+    - name: Rename IPA artifact
       run: |
-        APP_NAME=$(ls ${{ inputs.publish_dir }} | grep '\.app$' | head -n1)
-        mkdir Payload
-        cp -R "${{ inputs.publish_dir }}/$APP_NAME" Payload/
-        /usr/bin/zip -qr "${{ inputs.publish_dir }}/${{ inputs.artifact_name }}.ipa" Payload
+        mv ${{ inputs.publish_dir }}/${{ inputs.project_name }}.ipa ${{ inputs.publish_dir }}/${{ inputs.artifact_name }}.ipa
       shell: bash
 
