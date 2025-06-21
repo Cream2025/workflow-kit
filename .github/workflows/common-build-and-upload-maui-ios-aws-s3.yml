@@ -99,6 +99,6 @@ jobs:
       - name: Upload IPA using altool
         run: |
           xcrun altool --upload-app --type ios \
-          -f ${{ inputs.publish_dir }}/${{ inputs.project_name }}.ipa \
+          -f ${{ inputs.publish_dir }}/${{ inputs.artifact_name }}.ipa \
           -u "${{ secrets.APPLE_ID_USERNAME }}" \
           -p "${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}"
