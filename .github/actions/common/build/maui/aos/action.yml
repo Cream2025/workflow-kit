@@ -75,7 +75,7 @@ runs:
         BUILD_TOOLS=$(ls "$SDK/build-tools" | sort -V | tail -1)
         APKSIGNER="$SDK/build-tools/$BUILD_TOOLS/apksigner"
         
-        for apk in "$PUBLISH_DIR"/*.apk; do
+        for apk in "${{ inputs.publish_dir }}"/*.apk; do
             if $APKSIGNER verify "$apk" 2>/dev/null; then
                 echo "✅ 서명된 APK 발견: $apk"
                 mv "$apk" "${{ inputs.publish_dir }}/${{ inputs.artifact_name }}"
