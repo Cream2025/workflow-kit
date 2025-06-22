@@ -44,6 +44,14 @@ on:
         required: true
       AWS_SECRET_ACCESS_KEY:
         required: true
+      ANDROID_KEYSTORE_BASE64:
+        required: true
+      ANDROID_KEY_ALIAS:
+        required: true
+      ANDROID_KEY_PASSWORD:
+        required: true
+      ANDROID_KEYSTORE_PASSWORD:
+        required: true
     outputs:
       s3_upload_path:
         description: S3 Upload Path(업로드한 경로)
@@ -100,6 +108,10 @@ jobs:
           artifact_name: ${{ inputs.artifact_name }}
           publish_dir: ${{ inputs.publish_dir }}
           build_configuration: ${{ inputs.build_configuration }}
+          android_keystore_base64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          android_key_alias: ${{ secrets.ANDROID_KEY_ALIAS }}
+          android_key_password: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          android_keystore_password: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
 
       - name: Upload Artifact to AWS S3
         uses: Cream2025/workflow-kit/.github/actions/common/upload/aws-s3@main
