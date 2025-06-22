@@ -69,6 +69,7 @@ runs:
 
     # 2) Find verify APK signature And Rename
     - name: Find verify APK signature And Rename
+      shell: bash
       run: |
         SDK=${ANDROID_SDK_ROOT:-$ANDROID_HOME}
         BUILD_TOOLS=$(ls "$SDK/build-tools" | sort -V | tail -1)
