@@ -103,8 +103,8 @@ jobs:
           runtime_identifier: ${{ inputs.runtime_identifier }}
           artifact_name: ${{ inputs.artifact_name }}
           codesign_key: ${{ inputs.codesign_key }}
-          version: ${{ inputs.version }}
-          application_display_version: ${{ steps.increment-ios-display-version.outputs.new_value }}
+          version: ${{ steps.increment-ios-display-version.outputs.new_value }}
+          application_display_version: ${{ inputs.version }}
           publish_dir: ${{ inputs.publish_dir }}
           build_configuration: ${{ inputs.build_configuration }}
           ios_provisioning_base64: ${{ secrets.IOS_PROVISIONING_BASE64 }}
