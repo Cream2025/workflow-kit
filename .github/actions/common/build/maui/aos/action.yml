@@ -41,6 +41,7 @@ runs:
           -c "${{ inputs.build_configuration }}" \
           -f "${{ inputs.target_framework }}" \
           -p:AndroidPackageFormats=apk \
+          -p:RuntimeIdentifier=android-arm64
           -o "${{ inputs.publish_dir }}"
 
     # 2) Rename to artifact_name
