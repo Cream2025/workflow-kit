@@ -14,6 +14,18 @@ inputs:
   artifact_name:
     required: true
     description: apk명
+  android_keystore_base64:
+    required: true
+    description: android keystore base64
+  android_key_alias:
+    required: true
+    description: android keystore alias
+  android_key_password:
+    required: true
+    description: android keystore alias password
+  android_keystore_password:
+    required: true
+    description: android keystore password
   publish_dir:
     required: false
     default: publish
@@ -32,6 +44,10 @@ runs:
       shell: bash
       run: |
         dotnet workload install maui-android
+
+    - name: Decode keystore
+      run: |
+        echo "${{ inputs.android_keystore_base64 }}" | base64 -d > keystore.keystore
         
     # 1) Publish – APK only
     - name: Publish MAUI APK
@@ -43,6 +59,11 @@ runs:
           -p:AndroidPackageFormats=apk \
           -p:RuntimeIdentifier=android-arm64 \
           -p:CI_VARIABLE=true \
+          -p:AndroidKeyStore=true \
+          -p:AndroidSigningKeyStore="keystore.keystore" \
+          -p:AndroidSigningKeyAlias="${{ inputs.android_key_alias }}" \
+          -p:AndroidSigningKeyPass="${{ inputs.android_key_password }}" \
+          -p:AndroidSigningStorePass="${{ inputs.android_keystore_password }}" \
           -o "${{ inputs.publish_dir }}"
 
     # 2) Rename to artifact_name
