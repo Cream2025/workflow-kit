@@ -126,13 +126,6 @@ runs:
         dotnet workload restore ${{ inputs.work_dir }}/${{ inputs.project_name }}/${{ inputs.project_name }}.csproj
       shell: bash
 
-    - name: Clean bin/obj
-      run: |
-        rm -rf ${{ inputs.work_dir }}/${{ inputs.project_name }}/bin
-        rm -rf ${{ inputs.work_dir }}/${{ inputs.project_name }}/obj
-      shell: bash
-
-
     # (3) 빌드 + 아카이브 (.xcarchive → .app)
     - name: Build MAUI iOS project
       run: |
