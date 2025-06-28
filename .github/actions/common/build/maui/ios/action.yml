@@ -126,7 +126,16 @@ runs:
         dotnet workload restore ${{ inputs.work_dir }}/${{ inputs.project_name }}/${{ inputs.project_name }}.csproj
       shell: bash
 
-    # (3) 빌드 + 아카이브 (.xcarchive → .app)
+
+    # (3) google-services.json 무조건 삭제
+    # (2) 워크로드 설치
+    - name: Remove google-services.json
+      run: |
+        find ${{ inputs.work_dir }} -type f -name "google-services.json" -exec rm -f {} +
+      shell: bash
+
+  
+    # (4) 빌드 + 아카이브 (.xcarchive → .app)
     - name: Build MAUI iOS project
       run: |
         dotnet publish ${{ inputs.work_dir }}/${{ inputs.project_name }}/${{ inputs.project_name }}.csproj \
@@ -142,7 +151,7 @@ runs:
           -p:ApplicationDisplayVersion=${{ inputs.application_display_version }}
       shell: bash
 
-    # (3) IPA RENAME
+    # (5) IPA RENAME
     - name: Rename IPA artifact
       run: |
         mv ${{ inputs.publish_dir }}/${{ inputs.project_name }}.ipa ${{ inputs.publish_dir }}/${{ inputs.artifact_name }}.ipa
