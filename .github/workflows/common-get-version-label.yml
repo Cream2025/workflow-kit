@@ -51,11 +51,12 @@ jobs:
             echo "No matching version label found. Label must be '${BRANCH}-v<숫자>.<숫자>' format.(ex. ${BRANCH}-v1.0)"
             exit 1
           fi
-
+          
+          # (필균, 임시 주석처리)
           # live인 경우에는 뒷 버전 숫자(시간)를 뺌
-          if [[ "$BRANCH" != "live" ]]; then
-            VERSION="${VERSION}.${DATETIME}"
-          fi
+          #if [[ "$BRANCH" != "live" ]]; then
+          #  VERSION="${VERSION}.${DATETIME}"
+          #fi
 
           echo "VERSION: $VERSION"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
