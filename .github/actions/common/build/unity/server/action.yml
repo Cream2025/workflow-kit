@@ -11,6 +11,9 @@ inputs:
   unity_password:
     required: true
     description: Unity 계정의 패스워드
+  unity_version:
+    required: true
+    description: 빌드할 프로젝트의 Unity 버전
   project_path:
     required: true
     description: 빌드할 working directory

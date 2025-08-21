@@ -9,6 +9,9 @@ on:
       project_path:
         required: true
         type: string
+      unity_version:
+        required: true
+        type: string
       execute_method:
         required: true
         type: string
