@@ -1,0 +1,40 @@
+name: Deploy Unity Multiplay Hosting With AWS S3
+description: Unity UGS Multiplay Hosting의 Build를 업데이트하는 작업
+
+inputs:
+  ugs_project_id:
+    required: true
+    description: UGS의 Project ID
+  ugs_env:
+    required: true
+    description: UGS의 Environment
+  build_id:
+    required: true
+    description: UGS Multiplay Hosting Build의 ID
+  build_version:
+    required: true
+    description: 빌드 버전
+  s3_bucket:
+    required: true
+    description: S3 버킷명
+  s3_upload_path:
+    required: true
+    description: 버킷 제외한 S3 업로드 폴더 경로
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install UGS CLI
+      run: |
+        curl -s https://services.docs.unity.com/ugs-cli/install.sh
+      shell: bash
+
+    - name: Update Multiplay Hosting Build
+      env:
+        BUCKET_S3_URI: s3://${{ inputs.s3_bucket }}/${{ s3_upload_path }}
+      run: |
+        ugs multiplay-hosting build create-version "${{ inputs.build_id }}" \
+          -p "${{ inputs.ugs_project_id }}" -e "${{ inputs.ugs_env }}" \
+          --bucket-url "${BUCKET_S3_URI}" \
+          --build-version-name "${{ inputs.build_version }}"
+      shell: bash

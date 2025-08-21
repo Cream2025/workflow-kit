@@ -1,0 +1,105 @@
+name: Build Unity Server Linux And Upload to AWS S3
+
+on:
+  workflow_call:
+    inputs:
+      branch:
+        required: true
+        type: string
+      project_path:
+        required: true
+        type: string
+      unity_version:
+        required: true
+        type: string
+      s3_bucket:
+        required: true
+        type: string
+      s3_upload_upper_dir:
+        required: true
+        type: string
+      build_configuration:
+        required: false
+        default: Release
+        type: string
+      aws_region:
+        required: false
+        default: ap-northeast-2
+        type: string
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      UNITY_LICENSE:
+        required: true
+      UNITY_EMAIL:
+        required: true
+      UNITY_PASSWORD:
+        required: true
+    outputs:
+      s3_upload_path:
+        description: S3 Upload Path (업로드한 경로)
+        value: ${{ jobs.build-and-upload-unity-server-linux-aws-s3.outputs.s3_upload_path }}
+      s3_upload_url:
+        description: S3 Upload Url (다운로드 받을 수 있는 url)
+        value: ${{ jobs.build-and-upload-unity-server-linux-aws-s3.outputs.s3_upload_url }}
+
+jobs:
+  build-and-upload-unity-server-linux-aws-s3:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    outputs:
+      s3_upload_path: ${{ steps.set-s3-upload-value.outputs.s3_upload_path }}
+      s3_upload_url: ${{ steps.set-s3-upload-value.outputs.s3_upload_url }}
+
+    env:
+      S3_UPLOAD_PATH: ${{ inputs.s3_upload_upper_dir }}/${{ inputs.branch }}/server/linux/
+
+    steps:
+      - name: Checkout code from ${{ inputs.branch }}
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+
+      - name: Free disk space on runner
+        run: |
+          echo "Initial free space:" && df -h /
+          sudo docker system prune -af
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet \
+                      /opt/ghc /usr/local/.ghcup || true
+          echo "After cleanup:" && df -h /
+
+      - name: Build Unity project
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: ${{ inputs.project_path }}
+          unityVersion: ${{ inputs.unity_version }}
+          targetPlatform: LinuxHeadlessSimulation
+          allowDirtyBuild: true
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ inputs.aws_region }}
+
+      - name: Upload Artifact to AWS S3
+        uses: Cream2025/workflow-kit/.github/actions/common/upload/aws-s3@main
+        with:
+          upload_file_path: build/
+          aws_region: ${{ inputs.aws_region }}
+          s3_bucket: ${{ inputs.s3_bucket }}
+          s3_upload_path: ${{ env.S3_UPLOAD_PATH }}
+
+      - name: Set S3 Upload Value Output
+        id: set-s3-upload-value
+        run: |
+          echo "s3_upload_path=$S3_UPLOAD_PATH" >> $GITHUB_OUTPUT
+          echo "s3_upload_url=https://${{ inputs.s3_bucket }}.s3.${{ inputs.aws_region }}.amazonaws.com/$S3_UPLOAD_PATH" >> $GITHUB_OUTPUT
+        shell: bash

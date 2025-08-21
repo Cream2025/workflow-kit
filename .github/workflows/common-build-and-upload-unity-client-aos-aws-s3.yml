@@ -1,4 +1,4 @@
-name: Build Unity Android And Upload to AWS S3
+name: Build Unity Client Android And Upload to AWS S3
 
 on:
   workflow_call:
@@ -55,13 +55,13 @@ on:
     outputs:
       s3_upload_path:
         description: S3 Upload Path (업로드한 경로)
-        value: ${{ jobs.build-and-upload-unity-android.outputs.s3_upload_path }}
+        value: ${{ jobs.build-and-upload-unity-client-aos-aws-s3.outputs.s3_upload_path }}
       s3_upload_url:
         description: S3 Upload Url (다운로드 받을 수 있는 url)
-        value: ${{ jobs.build-and-upload-unity-android.outputs.s3_upload_url }}
+        value: ${{ jobs.build-and-upload-unity-client-aos-aws-s3.outputs.s3_upload_url }}
 
 jobs:
-  build-and-upload-unity-android:
+  build-and-upload-unity-client-aos-aws-s3:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     outputs:
@@ -69,7 +69,7 @@ jobs:
       s3_upload_url: ${{ steps.set-s3-upload-value.outputs.s3_upload_url }}
 
     env:
-      S3_UPLOAD_PATH: ${{ inputs.s3_upload_upper_dir }}/${{ inputs.branch }}/android/${{ inputs.artifact_name }}
+      S3_UPLOAD_PATH: ${{ inputs.s3_upload_upper_dir }}/${{ inputs.branch }}/client/android/${{ inputs.artifact_name }}
 
     steps:
       - name: Checkout code from ${{ inputs.branch }}
