@@ -9,7 +9,10 @@ on:
       project_path:
         required: true
         type: string
-      unity_version:
+      execute_method:
+        required: true
+        type: string
+      artifact_name:
         required: true
         type: string
       s3_bucket:
@@ -17,10 +20,6 @@ on:
         type: string
       s3_upload_upper_dir:
         required: true
-        type: string
-      build_configuration:
-        required: false
-        default: Release
         type: string
       aws_region:
         required: false
@@ -40,20 +39,21 @@ on:
     outputs:
       s3_upload_path:
         description: S3 Upload Path (업로드한 경로)
-        value: ${{ jobs.build-and-upload-unity-server-linux-aws-s3.outputs.s3_upload_path }}
+        value: ${{ jobs.build-and-upload-unity-server-aws-s3.outputs.s3_upload_path }}
       s3_upload_url:
         description: S3 Upload Url (다운로드 받을 수 있는 url)
-        value: ${{ jobs.build-and-upload-unity-server-linux-aws-s3.outputs.s3_upload_url }}
+        value: ${{ jobs.build-and-upload-unity-server-aws-s3.outputs.s3_upload_url }}
 
 jobs:
-  build-and-upload-unity-server-linux-aws-s3:
-    runs-on: ubuntu-latest
+  build-and-upload-unity-server-aws-s3:
+    runs-on: [self-hosted, Windows, Unity]
     timeout-minutes: 60
     outputs:
       s3_upload_path: ${{ steps.set-s3-upload-value.outputs.s3_upload_path }}
       s3_upload_url: ${{ steps.set-s3-upload-value.outputs.s3_upload_url }}
 
     env:
+      PUBLISH_DIR: publish
       S3_UPLOAD_PATH: ${{ inputs.s3_upload_upper_dir }}/${{ inputs.branch }}/server/linux/
 
     steps:
@@ -62,25 +62,16 @@ jobs:
         with:
           ref: ${{ inputs.branch }}
 
-      - name: Free disk space on runner
-        run: |
-          echo "Initial free space:" && df -h /
-          sudo docker system prune -af
-          sudo rm -rf /usr/local/lib/android /usr/share/dotnet \
-                      /opt/ghc /usr/local/.ghcup || true
-          echo "After cleanup:" && df -h /
-
-      - name: Build Unity project
-        uses: game-ci/unity-builder@v4
-        env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+      - name: Build Unity Project For Server
+        uses: Cream2025/workflow-kit/.github/actions/common/build/unity/server@main
         with:
-          projectPath: ${{ inputs.project_path }}
-          unityVersion: ${{ inputs.unity_version }}
-          targetPlatform: LinuxHeadlessSimulation
-          allowDirtyBuild: true
+          unity_license: ${{ secrets.UNITY_LICENSE }}
+          unity_email: ${{ secrets.UNITY_EMAIL }}
+          unity_password: ${{ secrets.UNITY_PASSWORD }}
+          project_path: ${{ inputs.project_path }}
+          execute_method: ${{ inputs.execute_method }}
+          artifact_name: ${{ inputs.artifact_name }}
+          publish_dir: ${{ env.PUBLISH_DIR }}
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -92,7 +83,7 @@ jobs:
       - name: Upload Artifact to AWS S3
         uses: Cream2025/workflow-kit/.github/actions/common/upload/aws-s3@main
         with:
-          upload_file_path: build/
+          upload_file_path: ${{ env.PUBLISH_DIR }}/
           aws_region: ${{ inputs.aws_region }}
           s3_bucket: ${{ inputs.s3_bucket }}
           s3_upload_path: ${{ env.S3_UPLOAD_PATH }}

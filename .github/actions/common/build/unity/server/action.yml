@@ -1,0 +1,46 @@
+name: Build Unity Server
+description: Unity Server를 빌드하는 작업
+
+inputs:
+  unity_license:
+    required: true
+    description: Unity License 내용
+  unity_email:
+    required: true
+    description: Unity 계정
+  unity_password:
+    required: true
+    description: Unity 계정의 패스워드
+  project_path:
+    required: true
+    description: 빌드할 working directory
+  execute_method:
+    required: true
+    description: 실행할 빌드 method
+  artifact_name:
+    required: true
+    description: 실행 파일명
+  publish_dir:
+    required: false
+    default: publish
+    description: output 경로
+
+runs:
+  using: "composite"
+  steps:
+    - name: Inject License
+      run: |
+        mkdir -p C:\ProgramData\Unity
+        printf '%s' "${{ inputs.unity_license }}" > C:\ProgramData\Unity\Unity_lic.ulf
+      shell: bash
+
+    - name: Build Unity Server Project
+      env:
+        BUILD_OUTPUT: ${{ inputs.publish_dir }}\${{ inputs.artifact_name }}
+      run: |
+        C:\Program Files\Unity\Unity.exe 
+          -quit -batchmode -nographics
+          -username ${{ inputs.unity_email }} -password ${{ inputs.unity_password }}
+          -executeMethod ${{ inputs.execute_method }} -buildOutput ${BUILD_OUTPUT}
+          -projectPath ${{ inputs.project_path }}
+      shell: bash
