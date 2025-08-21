@@ -50,13 +50,13 @@ runs:
       env:
         BUILD_OUTPUT: ${{ inputs.publish_dir }}\${{ inputs.artifact_name }}
       # run: |
-      #   C:\Program Files\Unity\Unity.exe 
+      #   C:\Program Files\Unity\Hub\Editor\${{ inputs.unity_version }}\Editor\Unity.exe
       #     -quit -batchmode -nographics
       #     -username ${{ inputs.unity_email }} -password ${{ inputs.unity_password }}
       #     -executeMethod ${{ inputs.execute_method }} -buildOutput ${BUILD_OUTPUT}
       #     -projectPath ${{ inputs.project_path }}
       run: |
-        $unity = 'C:\Program Files\Unity\Unity.exe'
+        $unity = 'C:\Program Files\Unity\Hub\Editor\${{ inputs.unity_version }}\Editor\Unity.exe'
         & $unity `
           -quit -batchmode -nographics `
           -username "${{ inputs.unity_email }}" -password "${{ inputs.unity_password }}" `

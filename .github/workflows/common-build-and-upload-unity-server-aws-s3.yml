@@ -72,6 +72,7 @@ jobs:
           unity_license: ${{ secrets.UNITY_LICENSE }}
           unity_email: ${{ secrets.UNITY_EMAIL }}
           unity_password: ${{ secrets.UNITY_PASSWORD }}
+          unity_version: ${{ inputs.unity_version }}
           project_path: ${{ inputs.project_path }}
           execute_method: ${{ inputs.execute_method }}
           artifact_name: ${{ inputs.artifact_name }}
