@@ -29,18 +29,34 @@ runs:
   using: "composite"
   steps:
     - name: Inject License
+      env:
+        UNITY_LICENSE: ${{ inputs.unity_license }}
       run: |
-        mkdir -p C:\ProgramData\Unity
-        printf '%s' "${{ inputs.unity_license }}" > C:\ProgramData\Unity\Unity_lic.ulf
-      shell: bash
+        $dir = 'C:\ProgramData\Unity'
+        New-Item -ItemType Directory -Path $dir -Force | Out-Null
+
+        # UTF-8 (No BOM)로 정확히 쓰기, 추가 개행 없음
+        $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+        [System.IO.File]::WriteAllText("$dir\Unity_lic.ulf", $env:UNITY_LICENSE, $utf8NoBom)
+      # run: |
+      #   mkdir -p C:\ProgramData\Unity
+      #   printf '%s' "${{ inputs.unity_license }}" > C:\ProgramData\Unity\Unity_lic.ulf
+      shell: powershell
 
     - name: Build Unity Server Project
       env:
         BUILD_OUTPUT: ${{ inputs.publish_dir }}\${{ inputs.artifact_name }}
+      # run: |
+      #   C:\Program Files\Unity\Unity.exe 
+      #     -quit -batchmode -nographics
+      #     -username ${{ inputs.unity_email }} -password ${{ inputs.unity_password }}
+      #     -executeMethod ${{ inputs.execute_method }} -buildOutput ${BUILD_OUTPUT}
+      #     -projectPath ${{ inputs.project_path }}
       run: |
-        C:\Program Files\Unity\Unity.exe 
-          -quit -batchmode -nographics
-          -username ${{ inputs.unity_email }} -password ${{ inputs.unity_password }}
-          -executeMethod ${{ inputs.execute_method }} -buildOutput ${BUILD_OUTPUT}
-          -projectPath ${{ inputs.project_path }}
-      shell: bash
+        $unity = 'C:\Program Files\Unity\Unity.exe'
+        & $unity `
+          -quit -batchmode -nographics `
+          -username "${{ inputs.unity_email }}" -password "${{ inputs.unity_password }}" `
+          -executeMethod "${{ inputs.execute_method }}" -buildOutput "$env:BUILD_OUTPUT" `
+          -projectPath "${{ inputs.project_path }}"
+      shell: powershell

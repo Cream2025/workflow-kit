@@ -57,10 +57,11 @@ jobs:
       S3_UPLOAD_PATH: ${{ inputs.s3_upload_upper_dir }}/${{ inputs.branch }}/server/linux/
 
     steps:
-      - name: Checkout code from ${{ inputs.branch }}
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.branch }}
+      # 임시 주석
+      # - name: Checkout code from ${{ inputs.branch }}
+      #   uses: actions/checkout@v4
+      #   with:
+      #     ref: ${{ inputs.branch }}
 
       - name: Build Unity Project For Server
         uses: Cream2025/workflow-kit/.github/actions/common/build/unity/server@main
