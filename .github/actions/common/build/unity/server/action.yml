@@ -51,7 +51,8 @@ runs:
     - name: Build Unity Server Project
       env:
         #BUILD_OUTPUT: ${{ inputs.publish_dir }}\${{ inputs.artifact_name }}
-        BUILD_OUTPUT: C:/actions-runner/_work/AnimalRunning/AnimalRunning/publish/AnimalRunningServer.x86_64
+        # BUILD_OUTPUT: C:/actions-runner/_work/AnimalRunning/AnimalRunning/publish/AnimalRunningServer.x86_64
+        BUILD_OUTPUT: C:\actions-runner\_work\AnimalRunning\publish\AnimalRunningServer.x86_64
       run: |
         $unity = 'C:\Program Files\Unity\Hub\Editor\${{ inputs.unity_version }}\Editor\Unity.exe'
         & $unity `
