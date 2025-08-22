@@ -51,8 +51,8 @@ runs:
         # [System.IO.File]::WriteAllText("$dir\Unity_lic.ulf", $env:UNITY_LICENSE, $utf8NoBom)
       # shell: powershell
       run: |
-        mkdir -p C:\ProgramData\Unity
-        printf '%s' "${{ inputs.unity_license }}" > C:\ProgramData\Unity\Unity_lic.ulf
+        mkdir -p C:/ProgramData\Unity
+        printf '%s' "${{ inputs.unity_license }}" > C:/ProgramData/Unity/Unity_lic.ulf
       shell: bash
       
 
@@ -68,9 +68,9 @@ runs:
       #     -projectPath "${{ inputs.project_path }}"
       # shell: powershell
       run: |
-        C:\Program Files\Unity\Hub\Editor\${{ inputs.unity_version }}\Editor\Unity.exe
-          -quit -batchmode -nographics
-          -username ${{ inputs.unity_email }} -password ${{ inputs.unity_password }}
-          -executeMethod ${{ inputs.execute_method }} -buildOutput ${BUILD_OUTPUT}
-          -projectPath ${{ inputs.project_path }}
+        "C:/Program Files/Unity/Hub/Editor/${{ inputs.unity_version }}/Editor/Unity.exe" \
+          -quit -batchmode -nographics \
+          -username "${{ inputs.unity_email }}" -password "${{ inputs.unity_password }}" \
+          -executeMethod "${{ inputs.execute_method }}" -buildOutput "${BUILD_OUTPUT}" \
+          -projectPath "${{ inputs.project_path }}"
       shell: bash
