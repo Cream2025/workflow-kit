@@ -56,7 +56,7 @@ jobs:
       s3_upload_url: ${{ steps.set-s3-upload-value.outputs.s3_upload_url }}
 
     env:
-      PUBLISH_DIR: publish
+      PUBLISH_DIR: ${{ github.workspace }}/publish
       S3_UPLOAD_PATH: ${{ inputs.s3_upload_upper_dir }}/${{ inputs.branch }}/server/linux/
 
     steps:
