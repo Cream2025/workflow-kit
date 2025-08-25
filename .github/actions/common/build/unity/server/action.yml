@@ -39,8 +39,6 @@ runs:
         $dir = 'C:\ProgramData\Unity'
         $unity_license_file_path = Join-Path $dir 'Unity_lic.ulf'
 
-        [System.IO.Directory]::CreateDirectory($dir) | Out-Null
-
         # UTF-8 (No BOM)로 정확히 쓰기, 추가 개행 없음
         $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
         [System.IO.File]::WriteAllText("$unity_license_file_path", $env:UNITY_LICENSE, $utf8NoBom)
@@ -60,4 +58,5 @@ runs:
           -manualLicenseFile "${{ steps.inject-license.outputs.UNITY_LICENSE_FILE_PATH }}" `
           -executeMethod "${{ inputs.execute_method }}" -buildOutput "$env:BUILD_OUTPUT" `
           -projectPath "${{ inputs.project_path }}"
+          -logFile "C:\actions-runner\_work\AnimalRunning\test5.txt"
       shell: powershell
