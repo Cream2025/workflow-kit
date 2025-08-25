@@ -57,14 +57,15 @@ jobs:
 
     env:
       PUBLISH_DIR: ${{ github.workspace }}/publish
+      PROJECT_PATH: ${{ github.workspace }}/${{ inputs.project_path }}
       S3_UPLOAD_PATH: ${{ inputs.s3_upload_upper_dir }}/${{ inputs.branch }}/server/linux/
 
     steps:
-      # 임시 주석
-      # - name: Checkout code from ${{ inputs.branch }}
-      #   uses: actions/checkout@v4
-      #   with:
-      #     ref: ${{ inputs.branch }}
+      - name: Checkout code from ${{ inputs.branch }}
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+          lfs: true
 
       - name: Build Unity Project For Server
         uses: Cream2025/workflow-kit/.github/actions/common/build/unity/server@main
@@ -73,7 +74,7 @@ jobs:
           unity_email: ${{ secrets.UNITY_EMAIL }}
           unity_password: ${{ secrets.UNITY_PASSWORD }}
           unity_version: ${{ inputs.unity_version }}
-          project_path: ${{ inputs.project_path }}
+          project_path: ${{ env.PROJECT_PATH }}
           execute_method: ${{ inputs.execute_method }}
           artifact_name: ${{ inputs.artifact_name }}
           publish_dir: ${{ env.PUBLISH_DIR }}
