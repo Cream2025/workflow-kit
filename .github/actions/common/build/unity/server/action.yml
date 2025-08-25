@@ -57,6 +57,6 @@ runs:
           -username "${{ inputs.unity_email }}" -password "${{ inputs.unity_password }}" `
           -manualLicenseFile "${{ steps.inject-license.outputs.UNITY_LICENSE_FILE_PATH }}" `
           -executeMethod "${{ inputs.execute_method }}" -buildOutput "$env:BUILD_OUTPUT" `
-          -projectPath "${{ inputs.project_path }}"
+          -projectPath "${{ inputs.project_path }}" `
           -logFile "C:\actions-runner\_work\AnimalRunning\test5.txt"
       shell: powershell
