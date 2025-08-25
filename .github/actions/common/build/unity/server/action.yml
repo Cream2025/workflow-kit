@@ -55,8 +55,9 @@ runs:
         $unity = 'C:\Program Files\Unity\Hub\Editor\${{ inputs.unity_version }}\Editor\Unity.exe'
         & $unity `
           -quit -batchmode -nographics `
+          -quitTimeout 1800 `
           -username "${{ inputs.unity_email }}" -password "${{ inputs.unity_password }}" `
-          -manualLicenseFile "${{ steps.inject-license.outputs.UNITY_LICENSE_FILE_PATH }}"
+          -manualLicenseFile "${{ steps.inject-license.outputs.UNITY_LICENSE_FILE_PATH }}" `
           -executeMethod "${{ inputs.execute_method }}" -buildOutput "$env:BUILD_OUTPUT" `
           -projectPath "${{ inputs.project_path }}"
       shell: powershell
