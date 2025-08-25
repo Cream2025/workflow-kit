@@ -32,39 +32,31 @@ runs:
   using: "composite"
   steps:
     - name: Inject License
+      id: inject-license
       env:
         UNITY_LICENSE: ${{ inputs.unity_license }}
       run: |
         $dir = 'C:\ProgramData\Unity'
-        # New-Item -ItemType Directory -Path $dir -Force | Out-Null
+        $unity_license_file_path = Join-Path $dir 'Unity_lic.ulf'
+
+        [System.IO.Directory]::CreateDirectory($dir) | Out-Null
 
         # UTF-8 (No BOM)로 정확히 쓰기, 추가 개행 없음
         $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
-        [System.IO.File]::WriteAllText("$dir\Unity_lic.ulf", $env:UNITY_LICENSE, $utf8NoBom)
+        [System.IO.File]::WriteAllText("$unity_license_file_path", $env:UNITY_LICENSE, $utf8NoBom)
+
+        "UNITY_LICENSE_FILE_PATH=$unity_license_file_path" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
       shell: powershell
-      # run: |
-      #   mkdir -p C:/ProgramData\Unity
-      #   printf '%s' "${{ inputs.unity_license }}" > C:/ProgramData/Unity/Unity_lic.ulf
-      # shell: bash
-      
 
     - name: Build Unity Server Project
       env:
         BUILD_OUTPUT: ${{ inputs.publish_dir }}\${{ inputs.artifact_name }}
-        # BUILD_OUTPUT: C:/actions-runner/_work/AnimalRunning/AnimalRunning/publish/AnimalRunningServer.x86_64
-        # BUILD_OUTPUT: C:\actions-runner\_work\AnimalRunning\publish\AnimalRunningServer.x86_64
       run: |
         $unity = 'C:\Program Files\Unity\Hub\Editor\${{ inputs.unity_version }}\Editor\Unity.exe'
         & $unity `
           -quit -batchmode -nographics `
           -username "${{ inputs.unity_email }}" -password "${{ inputs.unity_password }}" `
+          -manualLicenseFile "${{ steps.inject-license.outputs.UNITY_LICENSE_FILE_PATH }}"
           -executeMethod "${{ inputs.execute_method }}" -buildOutput "$env:BUILD_OUTPUT" `
           -projectPath "${{ inputs.project_path }}"
       shell: powershell
-      # run: |
-      #   "C:/Program Files/Unity/Hub/Editor/${{ inputs.unity_version }}/Editor/Unity.exe" \
-      #     -quit -batchmode -nographics \
-      #     -username "${{ inputs.unity_email }}" -password "${{ inputs.unity_password }}" \
-      #     -executeMethod "${{ inputs.execute_method }}" -buildOutput "${BUILD_OUTPUT}" \
-      #     -projectPath "${{ inputs.project_path }}"
-      # shell: bash

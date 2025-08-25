@@ -66,6 +66,7 @@ jobs:
         with:
           ref: ${{ inputs.branch }}
           lfs: true
+          clean: false
 
       - name: Build Unity Project For Server
         uses: Cream2025/workflow-kit/.github/actions/common/build/unity/server@main
