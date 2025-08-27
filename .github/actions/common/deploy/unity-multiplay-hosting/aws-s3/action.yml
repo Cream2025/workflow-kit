@@ -8,6 +8,12 @@ inputs:
   ugs_env:
     required: true
     description: UGS의 Environment
+  ugs_cli_service_key_id:
+    required: true
+    description: UGS CLI에서 사용할 Service Account의 Service Key Id
+  ugs_cli_service_secret_key:
+    required: true
+    description: UGS CLI에서 사용할 Service Account의 Service Secret Key
   build_id:
     required: true
     description: UGS Multiplay Hosting Build의 ID
@@ -36,8 +42,10 @@ runs:
 
     - name: Update Multiplay Hosting Build
       env:
-        UGS_CLI_PROJECT_ID: ${{ inputs.ugs_project_id }}
-        UGS_CLI_ENVIRONMENT_NAME: ${{ inputs.ugs_env }}
+        # UGS_CLI_PROJECT_ID: ${{ inputs.ugs_project_id }}
+        # UGS_CLI_ENVIRONMENT_NAME: ${{ inputs.ugs_env }}
+        UGS_CLI_SERVICE_KEY_ID: ${{ inputs.ugs_cli_service_key_id }}
+        UGS_CLI_SERVICE_SECRET_KEY: ${{ inputs.ugs_cli_service_secret_key }}
         BUCKET_S3_URI: s3://${{ inputs.s3_bucket }}/${{ inputs.s3_upload_path }}
       # run: |
       #   ugs multiplay-hosting build create-version "${{ inputs.build_id }}" \

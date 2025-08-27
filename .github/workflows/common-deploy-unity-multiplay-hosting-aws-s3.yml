@@ -21,6 +21,11 @@ on:
       s3_upload_path:
         required: true
         type: string
+    secrets:
+      UGS_CLI_SERVICE_KEY_ID:
+        required: true
+      UGS_CLI_SERVICE_SECRET_KEY:
+        required: true
 
 jobs:
   deploy-unity-multiplay-hosting-aws-s3:
@@ -33,6 +38,8 @@ jobs:
         with:
           ugs_project_id: ${{ inputs.project_id }}
           ugs_env: ${{ inputs.branch }}
+          ugs_cli_service_key_id: ${{ secrets.UGS_CLI_SERVICE_KEY_ID }}
+          ugs_cli_service_secret_key: ${{ secrets.UGS_CLI_SERVICE_SECRET_KEY }}
           build_id: ${{ inputs.build_id }}
           build_version: ${{ inputs.build_version }}
           s3_bucket: ${{ inputs.s3_bucket }}
