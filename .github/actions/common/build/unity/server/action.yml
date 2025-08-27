@@ -50,14 +50,31 @@ runs:
       env:
         BUILD_OUTPUT: ${{ inputs.publish_dir }}\${{ inputs.artifact_name }}
       run: |
-        $unity = 'C:\Program Files\Unity\Hub\Editor\${{ inputs.unity_version }}\Editor\Unity.exe'
-        & $unity `
-          -quit -batchmode -nographics `
-          -quitTimeout 1800 `
-          -username "${{ inputs.unity_email }}" -password "${{ inputs.unity_password }}" `
-          -manualLicenseFile "${{ steps.inject-license.outputs.UNITY_LICENSE_FILE_PATH }}" `
-          -executeMethod "${{ inputs.execute_method }}" -buildOutput "$env:BUILD_OUTPUT" `
-          -projectPath "${{ inputs.project_path }}"
+        #$unity = 'C:\Program Files\Unity\Hub\Editor\${{ inputs.unity_version }}\Editor\Unity.exe'
+        #& $unity `
+        #  -quit -batchmode -nographics `
+        #  -quitTimeout 1800 `
+        #  -username "${{ inputs.unity_email }}" -password "${{ inputs.unity_password }}" `
+        #  -manualLicenseFile "${{ steps.inject-license.outputs.UNITY_LICENSE_FILE_PATH }}" `
+        #  -executeMethod "${{ inputs.execute_method }}" -buildOutput "$env:BUILD_OUTPUT" `
+        #  -projectPath "${{ inputs.project_path }}"
 
-        Start-Sleep -Seconds 600
+        #Start-Sleep -Seconds 600
+        $unity = "C:\Program Files\Unity\Hub\Editor\${{ inputs.unity_version }}\Editor\Unity.exe"
+
+        $args = @(
+          "-quit", "-batchmode", "-nographics",
+          "-quitTimeout", "1800",
+          "-username", "${{ inputs.unity_email }}", "-password", "${{ inputs.unity_password }}",
+          "-manualLicenseFile", "${{ steps.inject-license.outputs.UNITY_LICENSE_FILE_PATH }}",
+          "-executeMethod", "${{ inputs.execute_method }}",
+          "-buildOutput", "$env:BUILD_OUTPUT",
+          "-projectPath", "${{ inputs.project_path }}"
+        )
+
+        $proc = Start-Process -FilePath $unity -ArgumentList $args -PassThru -Wait -NoNewWindow
+        if ($proc.ExitCode -ne 0) {
+          throw "Unity build failed with exit code $($proc.ExitCode)"
+        }
+
       shell: powershell
