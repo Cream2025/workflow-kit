@@ -39,13 +39,20 @@ runs:
         UGS_CLI_PROJECT_ID: ${{ inputs.ugs_project_id }}
         UGS_CLI_ENVIRONMENT_NAME: ${{ inputs.ugs_env }}
         BUCKET_S3_URI: s3://${{ inputs.s3_bucket }}/${{ inputs.s3_upload_path }}
-      # run: |
-      #   ugs multiplay-hosting build create-version "${{ inputs.build_id }}" \
-      #     -p "${{ inputs.ugs_project_id }}" -e "${{ inputs.ugs_env }}" \
-      #     --bucket-url "${BUCKET_S3_URI}" \
-      #     --build-version-name "${{ inputs.build_version }}"
       run: |
-        ugs game-server-hosting build create-version "${{ inputs.build_id }}" \
+        ugs multiplay-hosting build create-version "${{ inputs.build_id }}" \
+          --project-id "${{ inputs.ugs_project_id }}" \
+          ---environment-name "${{ inputs.ugs_env }}" \
           --bucket-url "${BUCKET_S3_URI}" \
           --build-version-name "${{ inputs.build_version }}"
+      # run: |
+      #   ugs --version
+      #   ugs config set project-id $UGS_CLI_PROJECT_ID
+      #   ugs config set environment-name $UGS_CLI_ENVIRONMENT_NAME
+      #   ugs config get environment
+      #   ugs status
+      #   ugs env list
+      #   ugs game-server-hosting build create-version "${{ inputs.build_id }}" \
+      #     --bucket-url "${BUCKET_S3_URI}" \
+      #     --build-version-name "${{ inputs.build_version }}"
       shell: bash
