@@ -58,4 +58,6 @@ runs:
           -manualLicenseFile "${{ steps.inject-license.outputs.UNITY_LICENSE_FILE_PATH }}" `
           -executeMethod "${{ inputs.execute_method }}" -buildOutput "$env:BUILD_OUTPUT" `
           -projectPath "${{ inputs.project_path }}"
+
+        Start-Sleep -Seconds 600
       shell: powershell
