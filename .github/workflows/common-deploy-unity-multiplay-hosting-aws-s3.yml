@@ -48,3 +48,5 @@ jobs:
           build_version: ${{ inputs.build_version }}
           s3_bucket: ${{ inputs.s3_bucket }}
           s3_upload_path: ${{ inputs.s3_upload_path }}
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
