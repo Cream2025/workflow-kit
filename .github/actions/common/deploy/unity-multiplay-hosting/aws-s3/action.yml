@@ -25,8 +25,13 @@ runs:
   using: "composite"
   steps:
     - name: Install UGS CLI
+      # run: |
+      #   curl -s https://services.docs.unity.com/ugs-cli/install.sh
+      # shell: bash
       run: |
-        curl -s https://services.docs.unity.com/ugs-cli/install.sh
+        curl -sLo ugs_installer https://ugscli.unity.com/v1 \
+          && shasum -c <<<"3bbc507d4776a20d5feb4958be2ab7d4edcea8eb  ugs_installer" \
+          && bash ugs_installer
       shell: bash
 
     - name: Update Multiplay Hosting Build

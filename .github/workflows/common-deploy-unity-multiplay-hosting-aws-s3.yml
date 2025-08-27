@@ -28,13 +28,6 @@ jobs:
     timeout-minutes: 60
 
     steps:
-      - name: Install UGS CLI
-        run: |
-          curl -sLo ugs_installer https://ugscli.unity.com/v1 \
-            && shasum -c <<<"3bbc507d4776a20d5feb4958be2ab7d4edcea8eb  ugs_installer" \
-            && bash ugs_installer
-        shell: bash
-
       - name: Update Unity Multiplay Hosting Build With AWS S3
         uses: Cream2025/workflow-kit/.github/actions/common/deploy/unity-multiplay-hosting/aws-s3@main
         with:
