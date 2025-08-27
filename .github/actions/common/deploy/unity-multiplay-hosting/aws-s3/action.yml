@@ -42,7 +42,7 @@ runs:
       run: |
         ugs multiplay-hosting build create-version "${{ inputs.build_id }}" \
           --project-id "${{ inputs.ugs_project_id }}" \
-          ---environment-name "${{ inputs.ugs_env }}" \
+          --environment-name "${{ inputs.ugs_env }}" \
           --bucket-url "${BUCKET_S3_URI}" \
           --build-version-name "${{ inputs.build_version }}"
       # run: |
