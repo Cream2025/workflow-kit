@@ -58,7 +58,7 @@ runs:
         ugs config set project-id "${UGS_CLI_PROJECT_ID}"
         ugs config set environment-name "${UGS_CLI_ENVIRONMENT_NAME}"
         ugs status
-        ugs env list
+        # ugs env list
         ugs game-server-hosting build create-version "${{ inputs.build_id }}" \
           --bucket-url "${BUCKET_S3_URI}" \
           --build-version-name "${{ inputs.build_version }}"
