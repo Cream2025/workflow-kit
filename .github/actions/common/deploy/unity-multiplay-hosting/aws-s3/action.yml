@@ -26,6 +26,12 @@ inputs:
   s3_upload_path:
     required: true
     description: 버킷 제외한 S3 업로드 폴더 경로
+  aws_access_key_id:
+    required: true
+    description: S3 버킷 접근 가능한 AWS Access Key Id
+  aws_secret_access_key:
+    required: true
+    description: S3 버킷 접근 가능한 AWS Secret Access Key
 
 runs:
   using: "composite"
@@ -47,6 +53,8 @@ runs:
         UGS_CLI_SERVICE_KEY_ID: ${{ inputs.ugs_cli_service_key_id }}
         UGS_CLI_SERVICE_SECRET_KEY: ${{ inputs.ugs_cli_service_secret_key }}
         BUCKET_S3_URI: s3://${{ inputs.s3_bucket }}/${{ inputs.s3_upload_path }}
+        AWS_ACCESS_KEY_ID: ${{ inputs.aws_access_key_id }}
+        AWS_SECRET_ACCESS_KEY: ${{ inputs.aws_secret_access_key }}
       # run: |
       #   ugs multiplay-hosting build create-version "${{ inputs.build_id }}" \
       #     --project-id "${{ inputs.ugs_project_id }}" \
@@ -61,5 +69,7 @@ runs:
         # ugs env list
         ugs game-server-hosting build create-version "${{ inputs.build_id }}" \
           --bucket-url "${BUCKET_S3_URI}" \
-          --build-version-name "${{ inputs.build_version }}"
+          --build-version-name "${{ inputs.build_version }}" \
+          --access-key "${AWS_ACCESS_KEY_ID}" \
+          --secret-key "${AWS_SECRET_ACCESS_KEY}"
       shell: bash
