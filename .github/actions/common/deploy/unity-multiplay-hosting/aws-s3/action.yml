@@ -37,9 +37,6 @@ runs:
   using: "composite"
   steps:
     - name: Install UGS CLI
-      # run: |
-      #   curl -s https://services.docs.unity.com/ugs-cli/install.sh
-      # shell: bash
       run: |
         curl -sLo ugs_installer https://ugscli.unity.com/v1 \
           && shasum -c <<<"3bbc507d4776a20d5feb4958be2ab7d4edcea8eb  ugs_installer" \
@@ -55,18 +52,11 @@ runs:
         BUCKET_S3_URI: s3://${{ inputs.s3_bucket }}/${{ inputs.s3_upload_path }}
         AWS_ACCESS_KEY_ID: ${{ inputs.aws_access_key_id }}
         AWS_SECRET_ACCESS_KEY: ${{ inputs.aws_secret_access_key }}
-      # run: |
-      #   ugs multiplay-hosting build create-version "${{ inputs.build_id }}" \
-      #     --project-id "${{ inputs.ugs_project_id }}" \
-      #     --environment-name "${{ inputs.ugs_env }}" \
-      #     --bucket-url "${BUCKET_S3_URI}" \
-      #     --build-version-name "${{ inputs.build_version }}"
       run: |
         ugs --version
         ugs config set project-id "${UGS_CLI_PROJECT_ID}"
         ugs config set environment-name "${UGS_CLI_ENVIRONMENT_NAME}"
         ugs status
-        # ugs env list
         ugs game-server-hosting build create-version "${{ inputs.build_id }}" \
           --bucket-url "${BUCKET_S3_URI}" \
           --build-version-name "${{ inputs.build_version }}" \
