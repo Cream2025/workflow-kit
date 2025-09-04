@@ -1,0 +1,51 @@
+name: Create Git Tags
+
+on:
+  workflow_call:
+    inputs:
+      branch:
+        required: true
+        description: 브랜치
+        type: string
+      tags:
+        description: Json Array로 되어있는 Tag명
+        required: true
+        type: string
+    secrets:
+      GIT_BOT_TOKEN:
+        required: true
+
+jobs:
+  get-version:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        tag: ${{ fromJSON(inputs.tags) }}
+
+    env:
+      BRANCH: ${{ inputs.branch }}
+      
+    steps:
+      - name: Checkout code from ${{ inputs.branch }} (using bot token)
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GIT_BOT_TOKEN }}
+          ref: ${{ inputs.branch }}
+          fetch-depth: 0
+          fetch-tags: true
+          sparse-checkout: |
+            .gitignore
+          
+      - name: Push tag ${{ matrix.tag }}
+        run: |
+          echo "Checking if tag exists..."
+          if git tag -l "${{ matrix.tag }}" | grep -Fxq "${{ matrix.tag }}"; then
+            echo "Tag already exist, deleting tag '${{ matrix.tag }}'..."
+            git tag -d "${{ matrix.tag }}"
+            git push origin "${{ matrix.tag }}"
+          else
+            echo "Tag does not exist, skipping delete."
+          fi
+
+          git tag "${{ matrix.tag }}"
+          git push origin "${{ matrix.tag }}"
