@@ -16,7 +16,7 @@ on:
         required: true
 
 jobs:
-  get-version:
+  create-git-tags:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -47,5 +47,6 @@ jobs:
             echo "Tag does not exist, skipping delete."
           fi
 
+          echo "Creating tag..."
           git tag "${{ matrix.tag }}"
           git push origin "${{ matrix.tag }}"
