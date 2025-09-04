@@ -52,9 +52,11 @@ jobs:
             exit 1
           fi
           
-          # live인 경우에는 뒷 버전 숫자(시간)를 뺌
+          # live인 경우에는 뒷 버전 숫자(시간)를 0으로 설정
           if [[ "$BRANCH" != "live" ]]; then
             VERSION="${VERSION}.${DATETIME}"
+          else
+            VERSION="${VERSION}.0"
           fi
 
           echo "VERSION: $VERSION"
