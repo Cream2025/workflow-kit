@@ -42,7 +42,7 @@ jobs:
           if git tag -l "${{ matrix.tag }}" | grep -Fxq "${{ matrix.tag }}"; then
             echo "Tag already exist, deleting tag '${{ matrix.tag }}'..."
             git tag -d "${{ matrix.tag }}"
-            git push origin "${{ matrix.tag }}"
+            git push --delete origin "${{ matrix.tag }}"
           else
             echo "Tag does not exist, skipping delete."
           fi
