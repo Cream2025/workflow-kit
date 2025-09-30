@@ -67,7 +67,9 @@ runs:
 
         # 경로가 디렉터리처럼 보이는지(문자열), 실제로 디렉터리인지(파일시스템) 판단
         $isDirSuffix = $false
-        if ($src.EndsWith('/') -or $src.EndsWith('\')) { $isDirSuffix = $true }
+        if ($src.EndsWith('/') -or $src.EndsWith('\')) {
+          $isDirSuffix = $true
+        }
 
         $isDirFs = Test-Path -Path $src -PathType Container
 
@@ -80,7 +82,11 @@ runs:
             aws s3 cp $src $dest --region $region
           }
         } else {
-          $recursive = if ($isDirSuffix) { '--recursive' } else { '' }
+          $recursive = ''
+          if ($isDirSuffix) {
+            $recursive = '--recursive'
+          }
+
           Write-Host "Running: aws s3 cp `"$src`" `"$dest`" --region `"$region`" $recursive"
           aws s3 cp $src $dest --region $region $recursive
         }
