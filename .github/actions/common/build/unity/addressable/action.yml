@@ -55,14 +55,15 @@ runs:
 
         $args = @(
           "-quit", "-batchmode", "-nographics",
-          "-quitTimeout", "1800",
-          "-username", "${{ inputs.unity_email }}", "-password", "${{ inputs.unity_password }}",
-          "-manualLicenseFile", "${{ steps.inject-license.outputs.UNITY_LICENSE_FILE_PATH }}",
-          "-executeMethod", "${{ inputs.execute_method }}",
-          "-buildOutput", "${{ inputs.publish_dir }}",
-          "-profilePath", "${{ inputs.profile_path }}",
-          "-bundleVersion", "${{ inputs.bundle_version }}",
-          "-projectPath", "${{ inputs.project_path }}"
+          "-quitTimeout=1800",
+          "-username=${{ inputs.unity_email }}",
+          "-password=${{ inputs.unity_password }}",
+          "-manualLicenseFile=${{ steps.inject-license.outputs.UNITY_LICENSE_FILE_PATH }}",
+          "-executeMethod=${{ inputs.execute_method }}",
+          "-buildOutput=${{ inputs.publish_dir }}",
+          "-profilePath=${{ inputs.profile_path }}",
+          "-bundleVersion=${{ inputs.bundle_version }}",
+          "-projectPath=${{ inputs.project_path }}"
         )
 
         $proc = Start-Process -FilePath $unity -ArgumentList $args -PassThru -Wait -NoNewWindow
