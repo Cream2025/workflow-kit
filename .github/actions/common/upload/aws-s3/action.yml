@@ -14,6 +14,10 @@ inputs:
   s3_upload_path:
     required: true
     description: 버킷 제외한 S3 업로드 폴더 경로
+  sync:
+    required: false
+    description: sync를 진행할건지 여부
+    default: "false"
 
 runs:
   using: "composite"
@@ -22,15 +26,62 @@ runs:
       if: runner.os != 'Windows'
       run: |
         SRC="${{ inputs.upload_file_path }}"
-        RECURSIVE=""
-        [[ "$SRC" == */ ]] && RECURSIVE="--recursive"
-        aws s3 cp "$SRC" "s3://${{ inputs.s3_bucket }}/${{ inputs.s3_upload_path }}" --region "${{ inputs.aws_region }}" $RECURSIVE
+        DEST="s3://${{ inputs.s3_bucket }}/${{ inputs.s3_upload_path }}"
+        REGION="${{ inputs.aws_region }}"
+        SYNC="${{ inputs.sync }}"
+
+        # 경로가 디렉터리로 끝나는지 여부 (문자열) + 실제 디렉터리 존재 여부(파일시스템)
+        IS_DIR_SUFFIX=false
+        [[ "$SRC" == */ ]] && IS_DIR_SUFFIX=true
+
+        IS_DIR_FS=false
+        if [ -d "$SRC" ]; then
+          IS_DIR_FS=true
+        fi
+
+        if [[ "$SYNC" == "true" ]]; then
+          # sync는 디렉터리 대상에 최적화. 파일이면 cp로 대체.
+          if $IS_DIR_FS || $IS_DIR_SUFFIX; then
+            echo "Running: aws s3 sync \"$SRC\" \"$DEST\" --region \"$REGION\""
+            aws s3 sync "$SRC" "$DEST" --region "$REGION"
+          else
+            echo "sync=true 이지만 대상이 파일이므로 cp로 업로드합니다."
+            aws s3 cp "$SRC" "$DEST" --region "$REGION"
+          fi
+        else
+          RECURSIVE=""
+          $IS_DIR_SUFFIX && RECURSIVE="--recursive"
+          echo "Running: aws s3 cp \"$SRC\" \"$DEST\" --region \"$REGION\" $RECURSIVE"
+          aws s3 cp "$SRC" "$DEST" --region "$REGION" $RECURSIVE
+        fi
+
       shell: bash
 
     - name: Upload to S3 (Windows)
       if: runner.os == 'Windows'
       run: |
-        $src = "${{ inputs.upload_file_path }}"
-        $recursive = if ($src.EndsWith('/') -or $src.EndsWith('\')) { '--recursive' } else { '' }
-        aws s3 cp $src "s3://${{ inputs.s3_bucket }}/${{ inputs.s3_upload_path }}" --region "${{ inputs.aws_region }}" $recursive
+        $src    = "${{ inputs.upload_file_path }}"
+        $dest   = "s3://${{ inputs.s3_bucket }}/${{ inputs.s3_upload_path }}"
+        $region = "${{ inputs.aws_region }}"
+        $sync   = "${{ inputs.sync }}"
+
+        # 경로가 디렉터리처럼 보이는지(문자열), 실제로 디렉터리인지(파일시스템) 판단
+        $isDirSuffix = $false
+        if ($src.EndsWith('/') -or $src.EndsWith('\')) { $isDirSuffix = $true }
+
+        $isDirFs = Test-Path -Path $src -PathType Container
+
+        if ($sync -eq 'true') {
+          if ($isDirFs -or $isDirSuffix) {
+            Write-Host "Running: aws s3 sync `"$src`" `"$dest`" --region `"$region`""
+            aws s3 sync $src $dest --region $region
+          } else {
+            Write-Host "sync=true 이지만 대상이 파일이므로 cp로 업로드합니다."
+            aws s3 cp $src $dest --region $region
+          }
+        } else {
+          $recursive = if ($isDirSuffix) { '--recursive' } else { '' }
+          Write-Host "Running: aws s3 cp `"$src`" `"$dest`" --region `"$region`" $recursive"
+          aws s3 cp $src $dest --region $region $recursive
+        }
       shell: powershell
