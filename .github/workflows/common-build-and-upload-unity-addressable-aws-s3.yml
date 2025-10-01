@@ -70,7 +70,7 @@ jobs:
       PUBLISH_DIR: ${{ github.workspace }}/${{ inputs.output_path }}
       PROJECT_PATH: ${{ github.workspace }}/${{ inputs.project_path }}
       ADDRESSABLE_PACK_PATH: ${{ inputs.project_path }}/AddressablePack/${{ inputs.branch }}/${{ inputs.target_platform }}
-      S3_UPLOAD_PATH: ${{ inputs.s3_upload_upper_dir }}/${{ inputs.branch }}/addressable/${{ inputs.target_platform }}/
+      S3_UPLOAD_PATH: ${{ inputs.s3_upload_upper_dir }}/${{ inputs.branch }}/addressable/${{ inputs.target_platform }}/${{ inputs.bundle_version }}/
 
     steps:
       - name: Checkout code from ${{ inputs.branch }}
