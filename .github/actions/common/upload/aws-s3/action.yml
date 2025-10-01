@@ -43,7 +43,7 @@ runs:
           # sync는 디렉터리 대상에 최적화. 파일이면 cp로 대체.
           if $IS_DIR_FS || $IS_DIR_SUFFIX; then
             echo "Running: aws s3 sync \"$SRC\" \"$DEST\" --region \"$REGION\""
-            aws s3 sync "$SRC" "$DEST" --region "$REGION"
+            aws s3 sync "$SRC" "$DEST" --region "$REGION" --delete
           else
             echo "sync=true, cp upload..."
             aws s3 cp "$SRC" "$DEST" --region "$REGION"
@@ -76,7 +76,7 @@ runs:
         if ($sync -eq 'true') {
           if ($isDirFs -or $isDirSuffix) {
             Write-Host "Running: aws s3 sync `"$src`" `"$dest`" --region `"$region`""
-            aws s3 sync $src $dest --region $region
+            aws s3 sync $src $dest --region $region --delete
           }
           else {
             Write-Host "sync=true, cp upload..."
