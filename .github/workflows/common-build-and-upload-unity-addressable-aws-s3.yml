@@ -118,6 +118,9 @@ jobs:
 
       - name: Push Addressable Pack
         run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
           echo "Adding Addressable Pack Path(${{ env.ADDRESSABLE_PACK_PATH }})..."
           git add "${{ env.ADDRESSABLE_PACK_PATH }}"
 
