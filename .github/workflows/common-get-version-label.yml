@@ -7,6 +7,11 @@ on:
         required: true
         description: 브랜치
         type: string
+      use_timestamp:
+        required: false
+        description: live 이외 branch에서 patch 버전에 timestamp를 넣을지 여부
+        type: boolean
+        default: true
     outputs:
       version:
         description: 버전 정보
@@ -20,6 +25,7 @@ jobs:
 
     env:
       BRANCH: ${{ inputs.branch }}
+      USE_TIMESTAMP: ${{ inputs.use_timestamp }}
       
     steps:
       - name: Set current datetime
@@ -53,7 +59,7 @@ jobs:
           fi
           
           # live인 경우에는 뒷 버전 숫자(시간)를 0으로 설정
-          if [[ "$BRANCH" != "live" ]]; then
+          if [[ "$BRANCH" != "live" && "$USE_TIMESTAMP" == "true" ]]; then
             VERSION="${VERSION}.${DATETIME}"
           else
             VERSION="${VERSION}.0"

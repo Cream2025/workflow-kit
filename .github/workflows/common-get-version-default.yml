@@ -9,6 +9,11 @@ on:
       branch:
         required: true
         type: string
+      use_timestamp:
+        required: false
+        description: live 이외 branch에서 patch 버전에 timestamp를 넣을지 여부
+        type: boolean
+        default: true
     outputs:
       version:
         description: 버전 정보(ex. v1.0.0)
@@ -26,6 +31,7 @@ jobs:
       
     env:
       BRANCH: ${{ inputs.branch }}
+      USE_TIMESTAMP: ${{ inputs.use_timestamp }}
 
     steps:
       - name: Set current datetime
@@ -47,7 +53,7 @@ jobs:
             VERSION=$(echo "$TAG" | awk -F '-' '{print $NF}')
           else
             CURRENT_BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF##refs/heads/}}"
-            if [[ "$BRANCH" != "live" ]]; then
+            if [[ "$BRANCH" != "live" && "$USE_TIMESTAMP" == "true" ]]; then
               VERSION="$INPUT_VERSION.$DATETIME"
             else
               VERSION="$INPUT_VERSION.0"
