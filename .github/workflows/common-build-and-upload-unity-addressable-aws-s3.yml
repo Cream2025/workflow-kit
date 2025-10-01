@@ -124,8 +124,13 @@ jobs:
           echo "Adding Addressable Pack Path(${{ env.ADDRESSABLE_PACK_PATH }})..."
           git add "${{ env.ADDRESSABLE_PACK_PATH }}"
 
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
           echo "Commit And Push..."
-          git commit -m "Addressable Pack Upload(Env: ${{ inputs.branch }}, Platform: ${{ inputs.target_platform }})"
+          git commit -m "Addressable Pack Upload(Env: ${{ inputs.branch }}, Platform: ${{ inputs.target_platform }}, Version: ${{ inputs.bundle_version }})"
           git push
         shell: bash
 
