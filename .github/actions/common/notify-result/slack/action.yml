@@ -1,0 +1,92 @@
+name: Notify Result by Slack
+description: workflow 수행 결과를 Slack 채널에 전송
+
+inputs:
+  failed_jobs:
+    required: true
+    description: 실패한 job 내역.(ex. job1,job2)
+  title:
+    required: true
+    description: 완료/실패에 대한 제목
+  slack_webhook_url:
+    required: true
+    description: Slack 웹훅 url
+  version:
+    required: false
+    description: 배포한 버전
+  upload_path:
+    required: false
+    description: 빌드 결과물 업로드 경로
+  notify_success:
+    required: false
+    default: "true"
+    description: 성공한 내역 알림 보낼지 여부
+
+runs:
+  using: "composite"
+  steps:
+    - name: Create Payload
+      id: create-payload
+      env:
+        INPUT_FAILED_JOBS: ${{ inputs.failed_jobs }}
+        INPUT_TITLE: ${{ inputs.title }}
+        INPUT_VERSION: ${{ inputs.version }}
+        INPUT_UPLOAD_PATH: ${{ inputs.upload_path }}
+        INPUT_NOTIFY_SUCCESS: ${{ inputs.notify_success }}
+      run: |
+        github_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        payload=""
+        color=""
+
+        if [[ "$INPUT_FAILED_JOBS" != "" ]]; then
+          formatted_jobs=""
+          IFS=',' read -ra JOB_ARRAY <<< "$INPUT_FAILED_JOBS"
+          for job in "${JOB_ARRAY[@]}"; do
+            formatted_jobs+="  - ${job}\n"
+          done
+
+          text="*[:cry: 배포 실패]*\n"
+          text+="- 서비스: \`${INPUT_TITLE}\`\n"
+          text+="- 실패한 job:\n${formatted_jobs}"
+          text+=":point_right: <${github_url}|workflow 확인>"
+
+          color="#FF0000"
+        elif [[ "$INPUT_NOTIFY_SUCCESS" == "true" ]]; then
+          text="*[:hatching_chick: 배포 성공]*\n"
+          text+="- 서비스: \`${INPUT_TITLE}\`\n"
+
+          if [[ -n "$INPUT_VERSION" ]]; then
+            text+="- 버전: \`${INPUT_VERSION}\`\n"
+          fi
+
+          if [[ -n "$INPUT_UPLOAD_PATH" ]]; then
+            text+="- 업로드 경로: ${INPUT_UPLOAD_PATH}\n"
+          fi
+
+          color="#36a64f"
+        fi
+
+        if [[ -n "$text" ]]; then
+          expanded_text=$(printf '%b' "$text")
+          payload=$(jq -n \
+            --arg color "$color" \
+            --arg text "$expanded_text" \
+            '{attachments: [{color: $color, text: $text, mrkdwn_in: ["text"]}]}')
+        fi
+
+        echo "payload<<SLACKEOF" >> $GITHUB_OUTPUT
+        echo "$payload" >> $GITHUB_OUTPUT
+        echo "SLACKEOF" >> $GITHUB_OUTPUT
+      shell: bash
+
+    - name: Send Message
+      if: ${{ steps.create-payload.outputs.payload != '' }}
+      env:
+        PAYLOAD: ${{ steps.create-payload.outputs.payload }}
+        SLACK_WEBHOOK_URL: ${{ inputs.slack_webhook_url }}
+      run: |
+        curl -fsS -H "Content-Type: application/json" \
+             -X POST \
+             -d "$PAYLOAD" \
+             "$SLACK_WEBHOOK_URL"
+      shell: bash
