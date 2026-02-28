@@ -8,6 +8,9 @@ inputs:
   title:
     required: true
     description: 완료/실패에 대한 제목
+  message:
+    required: false
+    description: 완료/실패에 대한 메세지
   slack_webhook_url:
     required: true
     description: Slack 웹훅 url
@@ -30,6 +33,7 @@ runs:
       env:
         INPUT_FAILED_JOBS: ${{ inputs.failed_jobs }}
         INPUT_TITLE: ${{ inputs.title }}
+        INPUT_MESSAGE: ${{ inputs.message }}
         INPUT_VERSION: ${{ inputs.version }}
         INPUT_UPLOAD_PATH: ${{ inputs.upload_path }}
         INPUT_NOTIFY_SUCCESS: ${{ inputs.notify_success }}
@@ -63,6 +67,10 @@ runs:
             text+="- 업로드 경로: ${INPUT_UPLOAD_PATH}\n"
           fi
 
+          if [[ -n "$INPUT_MESSAGE" ]]; then
+            text+="- 메세지: \`${INPUT_MESSAGE}\`\n"
+          fi
+          
           color="#36a64f"
         fi
 
