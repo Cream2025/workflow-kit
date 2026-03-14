@@ -22,6 +22,10 @@ on:
         required: false
         default: ap-northeast-2
         type: string
+      environment:
+        required: false
+        type: string
+        default: ''
     secrets:
       AWS_ACCESS_KEY_ID:
         required: true
@@ -30,6 +34,7 @@ on:
 
 jobs:
   deploy-eks-deployment:
+    environment: ${{ inputs.environment || null }}
     runs-on: ubuntu-latest
 
     steps:
