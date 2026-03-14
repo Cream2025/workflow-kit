@@ -1,0 +1,48 @@
+name: Deploy ECS Service
+
+on:
+  workflow_call:
+    inputs:
+      cluster_name:
+        required: true
+        type: string
+      service_name:
+        required: true
+        type: string
+      aws_region:
+        required: true
+        type: string
+      wait_for_stable:
+        required: true
+        type: boolean
+      environment:
+        required: false
+        type: string
+        default: ''
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+
+jobs:
+  deploy-ecs-service:
+    environment: ${{ inputs.environment || null }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            aws-region: ${{ inputs.aws_region }}
+
+      - name: Update ECS Service
+        run: |
+            aws ecs update-service --cluster ${{ inputs.cluster_name }} --service ${{ inputs.service_name }} --force-new-deployment --region ${{ inputs.aws_region }}
+
+      - name: Wait for Service Stable
+        if: inputs.wait_for_stable == true
+        run: |
+            aws ecs wait services-stable --cluster ${{ inputs.cluster_name }} --services ${{ inputs.service_name }} --region ${{ inputs.aws_region }}
