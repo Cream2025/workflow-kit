@@ -122,9 +122,9 @@ runs:
 
     # (2) 워크로드 설치
     - name: Dotnet Workload Restore
-      run: |
-        dotnet workload restore ${{ inputs.work_dir }}/${{ inputs.project_name }}/${{ inputs.project_name }}.csproj
+      run: dotnet workload restore --skip-manifest-update
       shell: bash
+      working-directory: ${{ inputs.work_dir }}/${{ inputs.project_name }}
 
 
     # (3) google-services.json 무조건 삭제
