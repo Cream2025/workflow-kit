@@ -1,4 +1,4 @@
-name: Build WPF Program And Upload to AWS S3
+name: Build Console Program And Upload to AWS S3
 
 on:
   workflow_call:
@@ -50,14 +50,14 @@ on:
     outputs:
       s3_upload_path:
         description: S3 Upload Path(업로드한 경로)
-        value: ${{ jobs.build-and-upload-wpf-aws-s3.outputs.s3_upload_path }}
+        value: ${{ jobs.build-and-upload-console-aws-s3.outputs.s3_upload_path }}
       s3_upload_url:
         description: S3 Upload Url(다운로드 받을 수 있는 url)
-        value: ${{ jobs.build-and-upload-wpf-aws-s3.outputs.s3_upload_url }}
+        value: ${{ jobs.build-and-upload-console-aws-s3.outputs.s3_upload_url }}
 
 jobs:
-  build-and-upload-wpf-aws-s3:
-    runs-on: windows-latest
+  build-and-upload-console-aws-s3:
+    runs-on: ubuntu-latest
     timeout-minutes: 30
     outputs:
       s3_upload_path: ${{ steps.set-s3-upload-value.outputs.s3_upload_path }}
@@ -79,8 +79,8 @@ jobs:
             aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             aws-region: ${{ inputs.aws_region }}
 
-      - name: Build WPF Program
-        uses: Cream2025/workflow-kit/.github/actions/common/build/wpf@main
+      - name: Build Console Program
+        uses: Cream2025/workflow-kit/.github/actions/common/build/console@main
         with:
           work_dir: ${{ inputs.work_dir }}
           project_name: ${{ inputs.project_name }}

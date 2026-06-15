@@ -1,5 +1,5 @@
-name: Build WPF Program
-description: WPF 프로그램 빌드하는 작업
+name: Build Console Program
+description: Console 프로그램 빌드하는 작업
 
 inputs:
   work_dir:
@@ -52,7 +52,7 @@ runs:
       run: dotnet restore ${{ inputs.work_dir }}/${{ inputs.project_name }}/${{ inputs.project_name }}.csproj
       shell: pwsh
 
-    - name: Publish WPF project
+    - name: Publish Console project
       run: |
         dotnet publish ${{ inputs.work_dir }}/${{ inputs.project_name }}/${{ inputs.project_name }}.csproj `
           -c ${{ inputs.build_configuration }} `
