@@ -63,7 +63,7 @@ runs:
       run: |
         $publishDir = "${{ inputs.publish_dir }}"
         $versionFile = Join-Path $publishDir "version.txt"
-        "${{ inputs.version }}" | Set-Content -Path $versionFile -Encoding UTF8
+        "${{ inputs.build_version }}" | Set-Content -Path $versionFile -Encoding UTF8
 
     - name: Archive build output
       run: |
