@@ -65,15 +65,20 @@ runs:
       run: |
         $publishDir = "${{ inputs.publish_dir }}"
         $environment = "${{ inputs.build_env }}"
-        $envAppSettings = Join-Path $publishDir "appsettings.$environment.json"
-        $appSettings = Join-Path $publishDir "appsettings.json"
+        $source = Join-Path $publishDir "appsettings.$environment.json"
+        $target = Join-Path $publishDir "appsettings.json"
 
-        if (Test-Path $envAppSettings) {
-          Copy-Item $envAppSettings $appSettings -Force
-          Write-Host "Applied appsettings.$environment.json"
-        } else {
-          Write-Host "No environment appsettings found. Keep default appsettings.json"
+        if (!(Test-Path $source)) {
+          throw "appsettings file not found: $source"
         }
+
+        Copy-Item $source $target -Force
+
+        Get-ChildItem -Path $publishDir -Filter "appsettings.*.json" -File |
+          Remove-Item -Force
+
+        Write-Host "Applied appsettings.$environment.json to appsettings.json"
+        Write-Host "Removed other appsettings.*.json files"
       shell: pwsh
 
     - name: Create version file
