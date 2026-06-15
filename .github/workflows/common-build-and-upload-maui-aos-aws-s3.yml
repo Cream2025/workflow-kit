@@ -69,7 +69,7 @@ jobs:
       s3_upload_url: ${{ steps.set-s3-upload-value.outputs.s3_upload_url }}
 
     env:
-      S3_UPLOAD_PATH: ${{ inputs.s3_upload_upper_dir }}/${{ inputs.branch }}/aos/${{ inputs.artifact_name }}
+      S3_UPLOAD_PATH: ${{ inputs.s3_upload_upper_dir }}/aos/${{ inputs.artifact_name }}
 
     steps:
       - name: Checkout code from ${{ inputs.branch }}

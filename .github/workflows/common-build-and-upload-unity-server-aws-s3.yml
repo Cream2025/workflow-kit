@@ -58,7 +58,7 @@ jobs:
     env:
       PUBLISH_DIR: ${{ github.workspace }}/publish
       PROJECT_PATH: ${{ github.workspace }}/${{ inputs.project_path }}
-      S3_UPLOAD_PATH: ${{ inputs.s3_upload_upper_dir }}/${{ inputs.branch }}/server/linux/
+      S3_UPLOAD_PATH: ${{ inputs.s3_upload_upper_dir }}/server/linux/
 
     steps:
       - name: Checkout code from ${{ inputs.branch }}
