@@ -50,13 +50,13 @@ on:
     outputs:
       s3_upload_path:
         description: S3 Upload Path(업로드한 경로)
-        value: ${{ jobs.build-and-upload-maui-win-aws-s3.outputs.s3_upload_path }}
+        value: ${{ jobs.build-and-upload-wpf-aws-s3.outputs.s3_upload_path }}
       s3_upload_url:
         description: S3 Upload Url(다운로드 받을 수 있는 url)
-        value: ${{ jobs.build-and-upload-maui-win-aws-s3.outputs.s3_upload_url }}
+        value: ${{ jobs.build-and-upload-wpf-aws-s3.outputs.s3_upload_url }}
 
 jobs:
-  build-and-upload-maui-win-aws-s3:
+  build-and-upload-wpf-aws-s3:
     runs-on: windows-latest
     timeout-minutes: 30
     outputs:
