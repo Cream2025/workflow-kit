@@ -1,0 +1,56 @@
+name: Update Version Variable
+
+on:
+  workflow_call:
+    inputs:
+      branch:
+        required: true
+        description: 브랜치
+        type: string
+      version:
+        required: true
+        description: 업데이트할 버전 정보 (v<major>.<minor>.<patch> 형식)
+        type: string
+    secrets:
+      GIT_BOT_TOKEN:
+        required: true
+
+jobs:
+  update-version:
+    runs-on: ubuntu-latest
+
+    env:
+      BRANCH: ${{ inputs.branch }}
+      VERSION: ${{ inputs.version }}
+      
+    steps:
+      - name: Validate version format
+        run: |
+          if [[ ! "$VERSION" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+            echo "Error: version must be 'v<major>.<minor>.<patch>' format. ex. v1.0.0"
+            exit 1
+          fi
+        shell: bash
+
+      - name: Get version variable name
+        id: get-version-var-name
+        run: |
+          BRANCH_UPPER=$(echo "$BRANCH" | tr '[:lower:]' '[:upper:]')
+          VERSION_VARIABLE_NAME="VERSION_${BRANCH_UPPER}"
+
+          echo "variable name: $VERSION_VARIABLE_NAME"
+          echo "name=$VERSION_VARIABLE_NAME" >> "$GITHUB_OUTPUT"
+        shell: bash
+
+      - name: Update version variable
+        run: |
+          VAR_NAME="${{ steps.get-version-var-name.outputs.name }}"
+
+          curl -sS -f -X PATCH -H "Authorization: Bearer ${{ secrets.GIT_BOT_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            -H "Content-Type: application/json" \
+            https://api.github.com/repos/${{ github.repository }}/actions/variables/$VAR_NAME \
+            -d "{\"name\":\"$VAR_NAME\", \"value\":\"$VERSION\"}"
+
+          echo "Updated variable '$VAR_NAME' to new version '$VERSION'."
+        shell: bash

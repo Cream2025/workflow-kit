@@ -1,0 +1,116 @@
+name: Get Next Version by Variable
+
+on:
+  workflow_call:
+    inputs:
+      branch:
+        required: true
+        description: 브랜치
+        type: string
+    secrets:
+      GIT_BOT_TOKEN:
+        required: true
+    outputs:
+      version:
+        description: 버전 정보
+        value: ${{ jobs.get-version.outputs.version }}
+
+jobs:
+  get-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get-new-version.outputs.version }}
+
+    env:
+      BRANCH: ${{ inputs.branch }}
+      
+    steps:
+      - name: Get version variable name
+        id: get-version-var-name
+        run: |
+          BRANCH_UPPER=$(echo "$BRANCH" | tr '[:lower:]' '[:upper:]')
+          VERSION_VARIABLE_NAME="VERSION_${BRANCH_UPPER}"
+
+          echo "variable name: $VERSION_VARIABLE_NAME"
+          echo "name=$VERSION_VARIABLE_NAME" >> "$GITHUB_OUTPUT"
+        shell: bash
+
+      - name: Get current version and validate
+        id: get-current-version
+        run: |
+          var_name="${{ steps.get-version-var-name.outputs.name }}"
+          var_json=$(curl -s -H "Authorization: Bearer ${{ secrets.GIT_BOT_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/${{ github.repository }}/actions/variables/$var_name)
+          version=$(echo "$var_json" | jq -r '.value')
+
+          echo "Current version: $version"
+          echo "version=$version" >> $GITHUB_OUTPUT
+        shell: bash
+        
+      - name: Get new version
+        id: get-new-version
+        
+        run: |
+          CURRENT_VERSION="${{ steps.get-current-version.outputs.version }}"
+
+          if [[ ! "$CURRENT_VERSION" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+            echo "Error: version must be 'v<major>.<minor>.<patch>' format. ex. v1.0.0"
+            exit 1
+          fi
+
+          MAJOR="${BASH_REMATCH[1]}"
+          MINOR="${BASH_REMATCH[2]}"
+          PATCH="${BASH_REMATCH[3]}"
+
+          LABELS='${{ toJson(github.event.pull_request.labels) }}'
+          echo "All labels:"
+          echo "$LABELS" | jq
+
+          RELEASE_LABELS=$(echo "$LABELS" \
+            | jq -r '.[].name' \
+            | grep -E '^release:(major|minor|patch)$' \
+            || true)
+
+          RELEASE_LABEL_COUNT=$(echo "$RELEASE_LABELS" | sed '/^$/d' | wc -l | tr -d ' ')
+
+          if [[ "$RELEASE_LABEL_COUNT" -eq 0 ]]; then
+            echo "Error: release label is required."
+            echo "Add one of: release:major, release:minor, release:patch"
+            exit 1
+          fi
+
+          if [[ "$RELEASE_LABEL_COUNT" -gt 1 ]]; then
+            echo "Error: only one release label is allowed."
+            echo "$RELEASE_LABELS"
+            exit 1
+          fi
+
+          RELEASE_LABEL="$RELEASE_LABELS"
+          RELEASE_TYPE="${RELEASE_LABEL#release:}"
+          
+          echo "Release type: $RELEASE_TYPE"
+
+          case "$RELEASE_TYPE" in
+            major)
+              MAJOR=$((MAJOR + 1))
+              MINOR=0
+              PATCH=0
+              ;;
+            minor)
+              MINOR=$((MINOR + 1))
+              PATCH=0
+              ;;
+            patch)
+              PATCH=$((PATCH + 1))
+              ;;
+            *)
+              echo "Error: invalid release type: $RELEASE_TYPE"
+              exit 1
+              ;;
+          esac
+
+          NEXT_VERSION="v${MAJOR}.${MINOR}.${PATCH}"
+          echo "Next version: $NEXT_VERSION"
+
+          echo "version=$NEXT_VERSION" >> "$GITHUB_OUTPUT"
