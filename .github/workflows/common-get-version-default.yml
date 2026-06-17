@@ -1,4 +1,4 @@
-name: Get Version by Tag or Input
+name: Get Version by Tag or Variable
 
 on:
   workflow_call:
@@ -9,11 +9,6 @@ on:
       branch:
         required: true
         type: string
-      use_timestamp:
-        required: false
-        description: live 이외 branch에서 patch 버전에 timestamp를 넣을지 여부
-        type: boolean
-        default: true
     outputs:
       version:
         description: 버전 정보(ex. v1.0.0)
@@ -31,33 +26,20 @@ jobs:
       
     env:
       BRANCH: ${{ inputs.branch }}
-      USE_TIMESTAMP: ${{ inputs.use_timestamp }}
 
     steps:
-      - name: Set current datetime
-        id: datetime
-        run: echo "date=$(date +'%y%m%d%H%M%S')" >> $GITHUB_OUTPUT
-
       - name: Get version and validate
         id: get-version
 
         env:
           EVENT_NAME: ${{ github.event_name }}
-          INPUT_VERSION: ${{ github.event.inputs.version }}
-          DATETIME: ${{ steps.datetime.outputs.date }}
-          
 
         run: |
           if [[ "$EVENT_NAME" == "push" ]]; then
-            TAG="${GITHUB_REF##*/}" # dev-api-v1.0.250616171415
+            TAG="${GITHUB_REF##*/}" # dev-api-v1.0.0
             VERSION=$(echo "$TAG" | awk -F '-' '{print $NF}')
           else
             CURRENT_BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF##refs/heads/}}"
-            if [[ "$BRANCH" != "live" && "$USE_TIMESTAMP" == "true" ]]; then
-              VERSION="$INPUT_VERSION.$DATETIME"
-            else
-              VERSION="$INPUT_VERSION.0"
-            fi
 
             echo "Validating branch..."
             echo "Current Branch: $CURRENT_BRANCH"
@@ -66,11 +48,22 @@ jobs:
               echo "Current branch is '$CURRENT_BRANCH'. This Workflow can be run on '$BRANCH'."
               exit 1
             fi
+
+            BRANCH_UPPER=$(echo "$BRANCH" | tr '[:lower:]' '[:upper:]')
+            VERSION_VARIABLE_NAME="VERSION_${BRANCH_UPPER}"
+
+            echo "Variable name: $VERSION_VARIABLE_NAME"
+
+            var_json=$(curl -s -H "Authorization: Bearer ${{ secrets.GIT_BOT_TOKEN }}" \
+              -H "Accept: application/vnd.github+json" \
+              https://api.github.com/repos/${{ github.repository }}/actions/variables/$VERSION_VARIABLE_NAME)
+              
+            VERSION=$(echo "$var_json" | jq -r '.value')
           fi
           
           echo "Validating version format: $VERSION"
           if [[ ! "$VERSION" =~ ^v([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
-            echo "Error: VERSION must be 'v<숫자>.<숫자>.<숫자>' format. (ex. v1.0.250616215300)"
+            echo "Error: VERSION must be 'v<숫자>.<숫자>.<숫자>' format. (ex. v1.0.0)"
             exit 1
           fi
 
