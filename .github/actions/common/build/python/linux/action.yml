@@ -7,7 +7,7 @@ inputs:
     description: 빌드할 working directory
   entry_point:
     required: true
-    description: PyInstaller 진입점 스크립트 (work_dir 기준, 예: client.py)
+    description: "PyInstaller 진입점 스크립트 (work_dir 기준, 예: client.py)"
   project_name:
     required: false
     default: ""
@@ -18,7 +18,7 @@ inputs:
     description: Python 버전
   artifact_name:
     required: true
-    description: 압축 파일명 (예: app.tar.gz)
+    description: "압축 파일명 (예: app.tar.gz)"
   build_version:
     required: true
     description: 빌드 버전
