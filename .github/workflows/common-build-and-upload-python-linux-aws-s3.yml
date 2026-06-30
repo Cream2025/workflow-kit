@@ -9,11 +9,12 @@ on:
       work_dir:
         required: true
         type: string
-      project_name:
-        required: true
-        type: string
       entry_point:
         required: true
+        type: string
+      project_name:
+        required: false
+        default: ""
         type: string
       artifact_name:
         required: true
@@ -53,7 +54,7 @@ on:
         type: string
       runs_on:
         required: false
-        default: ubuntu-22.04
+        default: ubuntu-24.04
         type: string
       aws_region:
         required: false
