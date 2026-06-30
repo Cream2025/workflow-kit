@@ -1,0 +1,97 @@
+name: Build Python Linux Program
+description: PyInstaller로 Python Linux 실행 파일을 빌드하는 작업
+
+inputs:
+  work_dir:
+    required: true
+    description: 빌드할 working directory
+  project_name:
+    required: true
+    description: 빌드할 프로젝트명 (실행 파일명으로 사용)
+  entry_point:
+    required: true
+    description: PyInstaller 진입점 스크립트 (work_dir 기준, 예: main.py)
+  python_version:
+    required: false
+    default: "3.11"
+    description: Python 버전
+  artifact_name:
+    required: true
+    description: 압축 파일명 (예: app.tar.gz)
+  build_version:
+    required: true
+    description: 빌드 버전
+  requirements_file:
+    required: false
+    default: requirements.txt
+    description: pip 의존성 파일 경로 (work_dir 기준)
+  publish_dir:
+    required: false
+    default: publish
+    description: output 경로 (repo 루트 기준)
+  build_mode:
+    required: false
+    default: onedir
+    description: PyInstaller 번들 모드 (onedir | onefile)
+  paths:
+    required: false
+    default: "."
+    description: PyInstaller --paths (import 검색 경로, work_dir 기준)
+  pyinstaller_args:
+    required: false
+    default: ""
+    description: |
+      PyInstaller 추가 인자.
+      예: --collect-all simplepyble --copy-metadata pillow --hidden-import foo
+
+outputs:
+  artifact_path:
+    description: 생성된 압축 파일 경로 (repo 루트 기준)
+    value: ${{ steps.archive.outputs.artifact_path }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python_version }}
+        cache: pip
+        cache-dependency-path: ${{ inputs.work_dir }}/${{ inputs.requirements_file }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r "${{ inputs.requirements_file }}"
+        pip install pyinstaller
+      shell: bash
+      working-directory: ${{ inputs.work_dir }}
+
+    - name: Build with PyInstaller
+      run: |
+        python -m PyInstaller \
+          --clean --noconfirm \
+          --paths "${{ inputs.paths }}" \
+          --${{ inputs.build_mode }} \
+          --name "${{ inputs.project_name }}" \
+          --distpath "$GITHUB_WORKSPACE/${{ inputs.publish_dir }}" \
+          --workpath "build" \
+          --specpath "build" \
+          ${{ inputs.pyinstaller_args }} \
+          "${{ inputs.entry_point }}"
+      shell: bash
+      working-directory: ${{ inputs.work_dir }}
+
+    - name: Create version file
+      run: echo "${{ inputs.build_version }}" > "${{ inputs.publish_dir }}/version.txt"
+      shell: bash
+
+    - name: Archive build output
+      id: archive
+      run: |
+        tar -czf "${{ inputs.artifact_name }}" \
+          --exclude="${{ inputs.artifact_name }}" \
+          -C "${{ inputs.publish_dir }}" .
+        mv "${{ inputs.artifact_name }}" "${{ inputs.publish_dir }}/${{ inputs.artifact_name }}"
+        echo "artifact_path=${{ inputs.publish_dir }}/${{ inputs.artifact_name }}" >> "$GITHUB_OUTPUT"
+      shell: bash
