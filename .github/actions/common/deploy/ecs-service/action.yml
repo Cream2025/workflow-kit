@@ -1,0 +1,110 @@
+name: Deploy ECS Service
+description: 현재 task definition의 이미지를 교체해 새 리비전을 등록하고 ECS 서비스를 배포하는 작업
+
+inputs:
+  cluster_name:
+    required: true
+    description: ECS 클러스터 이름
+  service_name:
+    required: true
+    description: ECS 서비스 이름
+  image_url:
+    required: true
+    description: 배포할 이미지 URI (동일 값을 넣으면 재시작 효과)
+  aws_region:
+    required: true
+    description: ECS 리전
+  wait_for_stable:
+    required: true
+    description: 롤아웃 안정화 대기 여부 (true | false)
+  container_name:
+    required: false
+    default: ""
+    description: 이미지를 교체할 컨테이너 이름. 생략 시 컨테이너가 1개면 자동 선택, 여러 개면 에러
+
+outputs:
+  new_td_arn:
+    description: 새로 등록된 task definition ARN
+    value: ${{ steps.register.outputs.new_td_arn }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Register New Task Definition Revision
+      id: register
+      env:
+        CLUSTER_NAME: ${{ inputs.cluster_name }}
+        SERVICE_NAME: ${{ inputs.service_name }}
+        IMAGE_URL: ${{ inputs.image_url }}
+        CONTAINER_NAME: ${{ inputs.container_name }}
+        AWS_REGION: ${{ inputs.aws_region }}
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        # 1. 현재 서비스가 사용 중인 task definition ARN 조회
+        CURRENT_TD_ARN=$(aws ecs describe-services \
+          --cluster "$CLUSTER_NAME" --services "$SERVICE_NAME" \
+          --region "$AWS_REGION" \
+          --query 'services[0].taskDefinition' --output text)
+
+        if [ -z "$CURRENT_TD_ARN" ] || [ "$CURRENT_TD_ARN" = "None" ]; then
+          echo "::error::Could not find current task definition for service '$SERVICE_NAME' (cluster: $CLUSTER_NAME)"
+          exit 1
+        fi
+        echo "current task definition: ${CURRENT_TD_ARN##*/}"
+
+        # 2. 전체 task definition JSON 확보
+        aws ecs describe-task-definition \
+          --task-definition "$CURRENT_TD_ARN" --region "$AWS_REGION" \
+          --query 'taskDefinition' --output json > current-td.json
+
+        # 3. 교체할 컨테이너 결정 (지정 없으면 컨테이너 1개일 때만 자동)
+        COUNT=$(jq '.containerDefinitions | length' current-td.json)
+        if [ "$COUNT" -eq 0 ]; then
+          echo "::error::task definition has no containerDefinitions."
+          exit 1
+        fi
+        if [ -n "$CONTAINER_NAME" ]; then
+          EXISTS=$(jq --arg cn "$CONTAINER_NAME" \
+            '[.containerDefinitions[] | select(.name == $cn)] | length' current-td.json)
+          if [ "$EXISTS" -eq 0 ]; then
+            NAMES=$(jq -r '[.containerDefinitions[].name] | join(", ")' current-td.json)
+            echo "::error::container_name '$CONTAINER_NAME' not found. Existing containers: $NAMES"
+            exit 1
+          fi
+          FILTER='(.containerDefinitions[] | select(.name == $cn) | .image) = $image'
+        elif [ "$COUNT" -eq 1 ]; then
+          FILTER='.containerDefinitions[0].image = $image'
+        else
+          NAMES=$(jq -r '[.containerDefinitions[].name] | join(", ")' current-td.json)
+          echo "::error::Multiple containers found ($NAMES). Please specify container_name."
+          exit 1
+        fi
+
+        # 4. 이미지 URI 교체 + register 불가한 읽기전용 필드 제거
+        jq --arg image "$IMAGE_URL" --arg cn "$CONTAINER_NAME" \
+          "$FILTER | del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy, .deregisteredAt)" \
+          current-td.json > new-td.json
+
+        # 5. 새 리비전 등록
+        NEW_TD_ARN=$(aws ecs register-task-definition \
+          --cli-input-json file://new-td.json --region "$AWS_REGION" \
+          --query 'taskDefinition.taskDefinitionArn' --output text)
+        echo "new task definition: ${NEW_TD_ARN##*/}"
+        echo "new_td_arn=$NEW_TD_ARN" >> "$GITHUB_OUTPUT"
+
+    - name: Update ECS Service
+      shell: bash
+      run: |
+        aws ecs update-service \
+          --cluster ${{ inputs.cluster_name }} \
+          --service ${{ inputs.service_name }} \
+          --task-definition ${{ steps.register.outputs.new_td_arn }} \
+          --region ${{ inputs.aws_region }}
+
+    - name: Wait for Service Stable
+      if: inputs.wait_for_stable == 'true'
+      shell: bash
+      run: |
+        aws ecs wait services-stable --cluster ${{ inputs.cluster_name }} --services ${{ inputs.service_name }} --region ${{ inputs.aws_region }}

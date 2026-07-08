@@ -9,12 +9,19 @@ on:
       service_name:
         required: true
         type: string
+      image_url:
+        required: true
+        type: string
       aws_region:
         required: true
         type: string
       wait_for_stable:
         required: true
         type: boolean
+      container_name:
+        required: false
+        type: string
+        default: ''
       environment:
         required: false
         type: string
@@ -38,11 +45,12 @@ jobs:
             aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             aws-region: ${{ inputs.aws_region }}
 
-      - name: Update ECS Service
-        run: |
-            aws ecs update-service --cluster ${{ inputs.cluster_name }} --service ${{ inputs.service_name }} --force-new-deployment --region ${{ inputs.aws_region }}
-
-      - name: Wait for Service Stable
-        if: inputs.wait_for_stable == true
-        run: |
-            aws ecs wait services-stable --cluster ${{ inputs.cluster_name }} --services ${{ inputs.service_name }} --region ${{ inputs.aws_region }}
+      - name: Deploy ECS Service
+        uses: Cream2025/workflow-kit/.github/actions/common/deploy/ecs-service@main
+        with:
+          cluster_name: ${{ inputs.cluster_name }}
+          service_name: ${{ inputs.service_name }}
+          image_url: ${{ inputs.image_url }}
+          container_name: ${{ inputs.container_name }}
+          aws_region: ${{ inputs.aws_region }}
+          wait_for_stable: ${{ inputs.wait_for_stable }}
