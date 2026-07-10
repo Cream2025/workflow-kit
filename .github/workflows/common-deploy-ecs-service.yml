@@ -12,16 +12,18 @@ on:
       image_url:
         required: true
         type: string
-      aws_region:
-        required: true
-        type: string
-      wait_for_stable:
-        required: true
-        type: boolean
       container_name:
         required: false
         type: string
         default: ''
+      wait_for_stable:
+        required: false
+        type: boolean
+        default: true
+      aws_region:
+        required: false
+        default: ap-northeast-2
+        type: string
       environment:
         required: false
         type: string
