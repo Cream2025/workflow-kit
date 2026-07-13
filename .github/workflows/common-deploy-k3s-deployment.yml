@@ -15,12 +15,17 @@ on:
       image_url:
         required: true
         type: string
+      environment:
+        required: false
+        type: string
+        default: ''
     secrets:
       K3S_KUBE_CONFIG:
         required: true
 
 jobs:
   deploy-k3s-deployment:
+    environment: ${{ inputs.environment || null }}
     runs-on: ubuntu-latest
 
     steps:
